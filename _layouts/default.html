@@ -1,5 +1,78 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
-{{ content }}
+<head>
+	<title>{{ page.title }}</title>
+	<!--<meta http-equiv="refresh" content="1">-->
+	<style type="text/css">
+		body
+		{
+			padding-left: 30px;
+			padding-right: 30px;
+		}
+		
+		p
+		{
+			text-indent: 50px;
+		}
+		
+		#header
+		{
+			height: 100px;
+			background-color: #cccccc;
+			margin-bottom: 10px;
+			border-radius: 5px;
+			text-align: center;
+			padding-top: 50px;
+		}
+		
+		#body
+		{
+			width: 73%;
+			float: left;
+		}
+		
+		#nav
+		{
+			width: 25%;
+			float: left;
+			padding-left: 1%;
+		}
+		
+		.post
+		{
+			border: 1px solid grey;
+			border-radius: 10px;
+			padding: 5px 5px 5px 5px;
+			margin-bottom: 10px;
+		}
+		
+		.post_title
+		{
+			font-weight: bold;
+			font-size: 125%;
+		}
+		
+		.post_title a
+		{
+			text-decoration: none;
+			color: black;
+		}
+	</style>
+</head>
+<body>
+	<div id="header">
+		<h3>Hello world</h3>
+	</div>
+	<div id="body">
+		{{ content }}
+	</div>
+	<div id="nav">
+		<h3>Other Posts:</h3>
+		<ul>
+			{% for post in site.posts %}
+				<li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
+			{% endfor %}
+		</ul>
+	</div>
 </body>
 </html>

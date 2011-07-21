@@ -9,12 +9,10 @@ In order for our network booting to work, we need to be able to manually configu
 
 So, a quick overview of how PXE works if you have DHCP and TFTP.  Your machine boots up, and starts looking for an IP address.  When the DHCP server responds to it, it sends the extra field 'next-server'.  If this is present, the machine tries to get a file called 'pxelinux.0'.  This contains the second stage bootloader, and (in my experience) is typically SysLinux.  SysLinux can give you nice semi-graphical menus, and can chainload a lot of other stuff.
 
-This wouldn't work for us.  First off, the default pxe software in most network cards (the stuff that gets DHCP and pxelinux.0) is crap.  It's not really configuarble, and you usually have to be actively watching the machine so you can press a button and configure it.  Enter [iPXE][iPXE]. iPXE can either be burned into your network cards (I've not tested this yet), or you can create bootable isos or USB drives.  iPXE is scriptable, and can download any necessary files via a wide variety of methods.  The only downside is you lose the nice menus of SysLinux.  It's supposedly possible to chainload a [modified syslinux][modified-syslinux], but I've been unable to get this working properly.
+This wouldn't work for us.  First off, the default pxe software in most network cards (the stuff that gets DHCP and pxelinux.0) is crap.  It's not really configuarble, and you usually have to be actively watching the machine so you can press a button and configure it.  Enter "iPXE":http://ipxe.org/. iPXE can either be burned into your network cards (I've not tested this yet), or you can create bootable isos or USB drives.  iPXE is scriptable, and can download any necessary files via a wide variety of methods.  The only downside is you lose the nice menus of SysLinux.  It's supposedly possible to chainload a "modified-syslinux":http://git.ipxe.org/people/mcb30/syslinux.git, but I've been unable to get this working properly.
 
 I've developed a rather simple script that asks the user for the IP, netmask, and gateway settings, then grabs a "stage 2" configuration file off of a remote webserver.  The advantage of this is that the burned iso/usb stick doesn't go out of date and need to be redone.
 
 More on this later.
 
 
-[iPXE]: http://ipxe.org/
-[modified-syslinux]: http://git.ipxe.org/people/mcb30/syslinux.git
