@@ -38,6 +38,13 @@
 			padding-left: 1%;
 		}
 		
+		#aboutme
+		{
+			background-color: #EEEEEE;
+			border-radius: 5px;
+			padding: 0 0 2px 5px;
+		}
+		
 		.post
 		{
 			border: 1px solid grey;
@@ -57,6 +64,16 @@
 			text-decoration: none;
 			color: black;
 		}
+		
+		.code
+		{
+			width: 100%;
+			background-color: #333333;
+			color: #e1e6e5;
+			padding-top: 5px;
+			padding-bottom: 5px;
+			border-radius: 5px;
+		}
 	</style>
 </head>
 <body>
@@ -67,6 +84,12 @@
 		{{ content }}
 	</div>
 	<div id="nav">
+		<div id="aboutme">
+			<h3>About Me</h3>
+			Brian "devicenull" Rak<br>
+			Sysadmin, Developer.  I do whatever it takes to keep our sites working.<br>
+			I also suck at picking colors, which is why everything is grey.
+		</div>
 		<h3>Other Posts:</h3>
 		<ul>
 			{% for post in site.posts %}

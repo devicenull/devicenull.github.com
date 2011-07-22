@@ -1,6 +1,0 @@
----
-layout: post
-title: Hello Jekyll
----
-
-So, maybe I'll actually use this.

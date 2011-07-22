@@ -1,0 +1,26 @@
+---
+layout: post
+title: Adventures in PXE booting part 2
+---
+
+Today was spent trying to get SysLinux chainloaded via iPXE over HTTP.  This appears to be something that not many people attempt to do.  Usually TFTP is the protocol of choice here, and there's very little documentation about getting this working correctly.  In order to do this, I'm loading gpxelinux.0 (part of the syslinux package, look in the gpxe directory) via HTTP, and having it fetch the config.  The setup for this is rather straightforward, once I determined that putting quotes around the values here breaks everything.  The basic config in iPXE you need for this is:
+
+<pre class="code">
+	set 209:string /menu.cfg
+	set 210:string http://10.10.10.10/
+	chain http://10.10.10.10/gpxelinux.0
+</pre>
+
+The 209:string line here is the name and path to your configuration file.  The 210:string is the hostname of your web server.  My understanding is that the 210:string line will be used as the base url for any other files that are needed.  Once you have this set your menu.cfg should look something like this:
+
+<pre class="code">
+	UI vesamenu.c32
+
+	TITLE Test1
+		localboot
+</pre>
+This *should* work, but it doesn't.  I can check web server logs, and see that both menu.cfg and vesamenu.c32 get downloaded, but the machine immediately reboots after that.  I'm probably going to have to use TFTP for this, though I'm going to make every effort to try to use HTTP for everything else.
+
+An annoying bug I've discovered with most (all?) Debian based LiveCD's: You can't boot them via MemDisk.  You can usally extract the kernel, initrd, and filesystem from them and boot those, but it's a bit more annyoing then dropping an ISO in a directory.
+
+If you are using Cisco routers (possibly anything with STP), you should be aware it can take anywhere from 15-30 seconds before an ethernet port goes from unlinked to linked.  This is just manifests itself as networking randomly not working, or DHCP timing out.  I've seen the issue where DHCP in PXE works correctly, but when it loads the operating system the port shuts down for long enough for STP to have to reinitialize, leading to more DHCP timeouts.  The appropriate setting to disable this is called 'portfast' on Cisco routers.  I haven't disabled it, because it can apparently cause temporary broadcast storms if you manage to plug a router into itself.  30s of delay is far better then taking down a production network for any amount of time.
