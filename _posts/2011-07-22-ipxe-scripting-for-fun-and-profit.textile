@@ -1,0 +1,42 @@
+---
+layout: post
+title: iPXE scripting for fun and profit
+---
+
+iPXE supports a moderately powerful scripting language.  It's actually possible to do some pretty cool things with it.  For example, to prompt for the IP information on boot you would use the following script.  Note that the 'ifopen net0' isn't in the example script iPXE gives for this, and without it your connection won't actually work.
+
+<pre class="code">
+	#!ipxe
+	echo -n IP: && read net0/ip
+	echo -n Subnet mask: && read net0/netmask
+	echo -n Gateway: && read net0/gateway
+	
+	ifopen net0
+</pre>
+
+You can pull off some pretty basic menus with it too:
+
+<pre class="code">
+	#!ipxe
+	echo -n 1) CentOS netinstall
+	echo -n 2) iPXE shell
+	echo -n Please select an option:
+
+	read option
+
+	goto option_{$option}
+
+	:option_1
+	# Install centos
+
+	:option_2
+	shell
+</pre>
+
+Embedding these into a custom image is pretty easy, you would just do:
+
+<pre class="code">
+	make EMBED="yourscript.ipxe"
+</pre>
+
+This would make an image that started yourscript.ipxe immediately on boot, which coupled with the script to read the IP information means you no longer need a DHCP server to network boot.
