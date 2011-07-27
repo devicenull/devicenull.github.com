@@ -1,0 +1,10 @@
+---
+layout: post
+title: Developing with Jekyll
+---
+
+This blog uses Jekyll as the backend.  It's actually rather nice, though I've found that the default testing webserver (WEBrick) sucks.  When I attempted to use it, I was seeing 4-5 second load times for even the simplest pages.  This really doesn't lend itself well to actually testing changes.
+
+Fortunately, there's a simple solution.  Start the WEBrick server, and ignore it.  Install nginx and configure it to point at your _site directory.  WEBrick will take care of monitoring your posts/templates for changes, and regenerating the HTML.  Nginx will do what it does best, and serve up static HTML at blazing speeds.
+
+It's a simple setup, but it means the difference between using Jekyll being unbearable and having Jekyll do what you want without getting in your way.
