@@ -1,0 +1,14 @@
+---
+layout: post
+title: Know your architecture
+---
+
+You need to know your architecture.  How can you expect to effectively develop anything when you don't know the basics of your architcture?  When you resolve problems by making changes and guessing at how they work?  When your method of rolling out a new server is some bash commands pasted into a txt file, and when they break you have no idea what to do?
+
+I'm not saying you need to understand every minor detail of the stack you work on.  I'm saying that you need to know the basics of your setup.
+
+Let's say you are a PHP developer.  If you are given a clean install and can't manage to setup your site, Apache, and PHP... you are doing it wrong.  If you rely on others to configure your machines and setup your code for you, can you really feel responsible for the code you rolled out to production?
+
+Maybe I'm crazy, but I believe every developer should be able to accomplish at least basic sysadmin tasks.  I don't expect them to be able to go and tweak sysctl settings to maximize performance, but I expect them to be able to go set up a server and have it run their code successfully.  I don't expect to be asked how to install basic PHP extensions, nor troubleshoot an install when it's missing the -devel version of a package.
+
+I've always been a generalist.  I know something about a wide variety of things, but I know very little in detail about each one.  You know what?  That perfectly suits what I have to do every day.  Some days I might be debugging some ancient PHP code, other days I'm trying to get unattended installs working via SSH under Windows, other days I'm fighting network issues that occur during PXE boots.  I wouldn't have it any other way.  I take pride in my ability to figue it out, not matter what situation I'm thrown into.
