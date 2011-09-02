@@ -1,0 +1,22 @@
+---
+layout: post
+title: The poor state of FPS game servers
+---
+
+Game server software as a whole appears to be moving backwards.  I've been running game servers for a number of years now, and in terms of management they have been getting steadily worse.  One example of this is the Duke Nukem Forever server (not even worrying about the client).  This "server":
+A) Requires you purchase a new copy of the game to run it
+B) Doesn't allow you to choose which IP or port you run it on
+C) Doesn't have any logging (or any interface at all for that matter)
+D) Doesn't have any way of administering it once it's up
+E) Doesn't have any configuraion file (only uses command line arguments)
+
+That list is just awful.  There isn't one useful feature that I would expect to see in a server.
+
+Let's compare this to HLDS (none of these features are new, they've been in since forever).  HLDS:
+A) Is freely available, anyone can download it
+B) Supports -ip and -port command line arguments to choose the IP and port
+C) Can log to disk or remote server via UDP
+D) Has a well supported rcon protocol, with a client that's built into the game
+E) Supports any number of configuration files, as well as command line arguments.
+
+If anything, game servers should be *improving* with time, not regressing.  I've even see games horribly break the dedicated server support of the engine they are based on.  No one is asking for advanced server features, but the basics are things that are difficult or impossible for third party developers to add after the fact.  We can add things afterward such as advanced admin features, we can't fix the game so core server features are present.
