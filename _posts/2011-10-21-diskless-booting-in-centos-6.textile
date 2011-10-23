@@ -1,0 +1,12 @@
+---
+layout: post
+title: Diskless booting in CentOS 6
+---
+
+I'm in the process of setting up a fully automated imaging system at work.  I'm aiming to have it be able to take a machine, figure out what hardware it's running, apply any available BIOS updates, set our standard CMOS settings, install the OS, and configure the OS (set hostname, IP addresses, etc).  Part of this means I need to be able to boot a lightweight Linux system in order to perform some of these tasks.
+
+There's two ways of doing this that I would consider.  One is packing the entire system up in a cpio file, and using this as the initramfs.  This works pretty nicely, the downside is you spend a lot of time sitting waiting for the system to fetch the cpio file and extract it.  It also means that you don't want to include any files that are rarely used (but sometimes handy!), as they make the boot process take more time.
+
+The alternative is booting the entire OS via nfs.  The kernel technically supports this with the nfsroot parameter, but it doesn't seem to be widely included in most kernel builds.  (CentOS 6 for example, does not have it enabled).  This seems like the most efficient way of booting, as you only end up pulling in files you need.  You can then have whatever software you want installed, and not have to worry about bloating your initrd file with a ton of rarely used packages.
+
+Sadly, it seems that not many people have gone down this route, as there's little up to date documetnation on it, so it's going to be a learning process getting the entire thing working correctly.
