@@ -1,0 +1,61 @@
+---
+layout: post
+title: Pogoplug Wardriving
+---
+
+So, I've been tossing around the idea of using my Pogoplug as a permanent wardriving device in my car.  It seems like it would be perfect for this, it's low power usage, no moving parts, and should be powerful enough to handle Kismet.  It also uses 5v power internally (oddly, it seems to use two 5v rails internally), which should be fairly easy to obtain from a car.
+
+To get started, I installed ArchLinux ARM on it, along with Kismet.  My GPS device (some random USB one I bought years ago) was detected perfectly.  I also have a RTL8192SU based 802.11n USB device that I'm hoping to use (at least for testing).  This is proving rather difficult, as it doesn't seem to support monitor mode.  I've found "some instructions":http://forum.aircrack-ng.org/index.php?topic=7908.msg47579#msg47579 for getting this working under Debian, but I'm running into some issues getting this working under Arch.
+
+I picked up the fun trick of using iwpriv to see what options the card supports:
+
+<pre class="code">
+    [root@alarm ~]# iwpriv wlan0
+    wlan0     Available private ioctls :
+          read32           (8BE0) : set   1 int   & get   0
+          write32          (8BE1) : set   1 int   & get   0
+          driver_ext       (8BE2) : set   0       & get   0
+          mp_ioctl         (8BE3) : set   0       & get   0
+          apinfo           (8BE4) : set   1 int   & get   0
+          setpid           (8BE5) : set   1 int   & get   0
+          wps_start        (8BE6) : set   1 int   & get   0
+</pre>
+
+I've also seen various reports that upgrading the firmware to the version in the Debian repository will help fix this.  The firmware that comes with Arch seems to be the latest version already (md5sum's match), so this really doesn't help.
+
+I tried a couple different things for this, and couldn't get it working.  It did seem to work okay on my Debian based system, so I suspect there's something that can be done to fix this.  For now, I've swapped in a NetGear WNA1000 device, which is Atheros based.  This worked pretty well, though I needed to manually grab "the firmare":https://aur.archlinux.org/packages/ca/carl9170-fw/PKGBUILD from AUR.  It seems there should have been a way to do this via pacman, but I was unsure of how to set that up.
+
+So, the box seems powerful enough to run kismet_server.  I'm seeing a load average of 1-2, with kismet_server using about 10-15% CPU, and 40% memory.  One issue is that the machine doesn't have a hardware clock, so it loses it's time whenever power is removed.  The best way I can see to solve this is GPSD + NTPD.  This shoud ensure the clock always gets set correctly shortly after the machine startup.  The best tutorial I found for this is "here":http://catb.org/gpsd/gpsd.html .  After doing that config, it was just a matter of adding this to rc.local:
+
+<pre class="code">
+    /usr/sbin/gpsd /dev/ttyUSB0 -n
+    /usr/sbin/ntpd
+</pre>
+
+and ntpq shows the GPS being used as the clock:
+
+<pre class="code">
+    [root@alarm net]# ntpq -p
+         remote           refid      st t when poll reach   delay   offset  jitter
+    ==============================================================================
+    *SHM(0)          .GPS.            0 l   41   64    3    0.000   19.162   1.161
+     SHM(1)          .GPS1.           0 l    -   64    0    0.000    0.000   0.000
+</pre>
+
+Now, the kismet setup.  For the most part, the default config is okay.  The only important lines to change are:
+
+<pre class="code">
+    ncsource=wlan0
+    gpstype=gpsd
+    gpshost=localhost:2947
+    gpsmodelock=false
+    gpsreconnect=true
+    logtypes=gpsxml,nettxt,netxml
+</pre>
+
+The other thing to do here is comment out all the alert lines.  In this case, we don't particulary care about any of them.
+
+Relevant links:
+* "ArchLinux wireless setup":https://wiki.archlinux.org/index.php/Wireless_Setup
+* "GPSD":http://catb.org/gpsd/gpsd.html
+* "Kismet README":https://kismetwireless.net/documentation.shtml
