@@ -1,0 +1,67 @@
+---
+layout: post
+title: PogoPlug Wardriving (Part 3)
+---
+
+The ultimate goal for all of this is to have a device that turns on when I start my car, records data until I arrive home, then uploads everything to the internet (using my wifi).  One issue with this is what happens when I'm not in range of my wifi, but stopped (when I arrive at work or whatever).  I haven't come up with a clever way of dealing with this, so I'm not yet worrying about that.
+
+For the moment, I've been working on getting everything set up to detect my wifi and upload all the logs to WiGLE.  This is what I have so far:
+
+<pre class="code"><?php
+	$f = fopen('/root/kismet_log','r');
+	while (true)
+	{
+		if (feof($f))
+		{
+			sleep(5);
+			continue;
+		}
+		$line = fgets($f);
+		echo $line;
+		if (stripos($line,'Detected new managed network') !== FALSE && stripos($line,'MYWIFI') !== FALSE)
+		{
+			// See if we've been running for 5 mins or more.
+			// If we have been, we've probably arrived home (instead of just left)
+			$tmp = explode(" ",file_get_contents('/proc/uptime'));
+			$uptime = $tmp[0];
+			echo "Uptime: ".$uptime."\n";
+			if ($uptime < 300) continue;
+			break;
+		}
+	}
+	echo "Killing kismet...\n";
+	exec('pkill kismet_server');
+	sleep(5);
+
+	echo "Archiving files...\n";
+	$curdate = strftime('%F_%H-%M-%S');
+	exec("cd /root/incoming; tar czf /root/{$curdate}.tar.gz *");
+	exec("mv /root/incoming/* /root/outgoing/");
+
+	echo "Connecting to wifi...\n";
+	// Time to connect to the wireless
+	exec("/usr/sbin/wpa_supplicant -i wlan0 -c /etc/wpa_supplicant.conf > /dev/null 2>&1 &");
+	sleep(15);
+	exec("/usr/sbin/dhcpcd -q wlan0");
+	sleep(15);
+
+	echo "Uploading file...\n";
+	$c = curl_init('http://wigle.net/gps/gps/main/confirmfile');
+	curl_setopt_array($c,array(
+		CURLOPT_RETURNTRANSFER => true
+		,CURLOPT_POSTFIELDS => array(
+				'observer' => 'XXXXX'
+				,'password' => 'YYYYY'
+				,'noexpire' => 'checked'
+				,'stumblefile' => "@/root/{$curdate}.tar.gz"
+				,'Send' => 'Send'
+		)
+		,CURLOPT_VERBOSE => true
+	));
+
+	curl_exec($c);
+</pre>
+
+I have Kismet set up so all it's logs go into /root/incoming, and the raw output of kismet_server goes into /root/kismet_log.  I'm hoping that I'll get a new 'Detected new managed network' entry when I come into range of my wifi, which would trigger this process.  I haven't yet been able to confirm this.  The ideal way to do this would be some sort of Kismet event that occurs whenever an access point is detected, but there doesn't appear to be any way to do this without writing a plugin.
+
+The upload process seems to work well, though it's somewhat fragile as I'm only executing commands and hoping they work. I may have to start verifiying that the commands have worked before I move on to the next step.
