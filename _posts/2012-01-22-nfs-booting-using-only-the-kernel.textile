@@ -1,0 +1,55 @@
+---
+layout: post
+title: NFS Booting using only the kernel
+---
+
+The Linux kernel has the ability to do a DHCP request on boot and mount the root directory via NFS.  This is all possible using only kernel options, you don't need an initrd and a bunch of custom tricks to do this.  Before I go any further, be warned that a lot of the documentation regarding this is out of date or incomplete.  You are unlikely to find one guide that tells you everything you need to know.
+
+1) You need to setup a minimal linux image.  My "diskless centos booting":/2011/10/05/diskless-centos-booting.html entry would be a good start for setting this up.  This step is critical, as you need some tweaks to make this image bootable.
+
+2) You need to rebuild your kernel (if you are using CentOS).  There's a number of options that need to be enabled, and most of them aren't enabled by default.  Make sure you have the following options enabled:
+* NIC drivers must be included in the kernel (not via a module!)
+* Networking options ---> IP: kernel level autoconfiguration (CONFIG_IP_PNP=y)
+* Networking options ---> IP: DHCP support (CONFIG_IP_PNP_DHCP=y)
+* Network File Systems ---> NFS file system support (CONFIG_NFS_FS=y)
+* Network File Systems ---> Root file system on NFS (CONFIG_ROOT_NFS=y) 
+After rebuiling your kernel, copy the resulting bzImage to your tftpboot directory.
+
+3) Create a fstab.  This one sets up a 100mb tmpfs based /var.  This is important for things like log files and sockets.
+
+<pre class="code">
+	none            /               none    rw      0       0
+	/proc           /proc           proc    rw      0       0
+	/sys            /sys            sysfs   rw      0       0
+	devpts          /dev/pts        devpts  gid=5,mode=620  0       0
+	tmpfs           /var            tmpfs   size=100M,mode=0755     0       0
+</pre>
+
+4) Once all your packages are setup (install anything else you need before this step, as it will break Yum until you undo it), do the following:
+
+<pre class="code">
+	mv var newvar
+	mkdir var
+</pre>
+
+If you skip this step, you're going to end up with a read-only /var .  This will break many, many things, so we will be creating a ramdisk for this.  In order to do this, we need to modify one of the startup scripts to copy everything from /newvar to /var.  I currently do this in /etc/rc.d/rc.sysinit.  Find the "Mounting local filesystems" action, and add something like this after it:
+
+<pre class="code">
+	action $"Copying contents of var over" cp -R /newvar/* /var/
+</pre>
+
+5) Export your new linux image via NFS.  Add this line to your /etc/exports. Don't make this writable unless you are only going to be booting one machine from it.  If you need writable mounts for multiple machines, take a look at the "nfsroot":http://www.mjmwired.net/kernel/Documentation/filesystems/nfsroot.txt documentation for some tricks.
+
+<pre class="code">
+	label diskless
+		MENU LABEL CentOS 6 x64 diskless
+		kernel bzImage
+		append ip=dhcp rootfstype=nfs root=/dev/nfs ro nfsroot=10.10.10.10:/home/nfsboot/cent6 single
+</pre>
+
+At this point, you should be able to boot the image with no issues.  You may see some errors pop up during boot, but these are generally non-fatal.  I haven't had a reason to go and fix them yet, as they don't seem to cause any issues.
+
+Here are some of the references I used in setting this up:
+* "DisklessImages @ KernelNewbies":http://kernelnewbies.org/FAQ/DisklessImages
+* "oneSIS NFSroot HOWTO":http://onesis.sourceforge.net/NFSroot-HOWTO.php
+* "nfsroot documentation":http://www.mjmwired.net/kernel/Documentation/filesystems/nfsroot.txt
