@@ -1,0 +1,8 @@
+---
+layout: post
+title: PING Transmit Failed. General Failure.
+---
+
+On a bunch of our new machines we were encoutering 'PING: transmit failed. General failure.'.  At least in our case, this seems to be have been caused by an IP conflict Windows was unable to detect (usually you get a message box complaining about an IP conflict if one occurs).  Changing the machine's IP to a new one fixed this problem instantly.
+
+It's possible this is not the only cause of this error message.  Most of the information you can find online consists of people doing various voodoo in order to fix it (modem restarts, computer restarts, etc).  It's pretty tough to find a decent description of what this error even means.

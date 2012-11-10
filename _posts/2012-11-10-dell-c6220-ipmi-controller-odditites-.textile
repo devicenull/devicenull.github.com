@@ -1,0 +1,13 @@
+---
+layout: post
+title: Dell c6220 IPMI controller odditites
+---
+
+The networking configuration of the IPMI controllers on our new Dell c6220 boxes is strange to say the least.  We've encountred issues where the IPMI controller binds to a random interface, usually making itself inaccessible to the world.
+
+I've done some digging into this, and it seems that the IPMI controller is really an embedded Linux device (no surprise there).  It has two main network interfaces:
+
+* bond0 - This is used for the "shared" network option of the IPMI controller.  As far as I can tell this bond is created in active-backup mode.  This means that if your primary network interface drops for any reason, the IPMI controller will failover to the secondary network interface.  The *only* way to get it to fail back over to the primary network interface is to briefly down the secondary network interface.  Resetting the BMC will have no effect (which is dumb).
+* eth1 - This is used for the "dedicated" network option.  If you're using this, you should definitely configure the IPMI controller to use it, and don't just rely on it's auto-detection of this.
+
+Speaking of configuring the network mode, you have two options for this '1' or '2'.  The documentation doesn't indicate which is which, but based on my testing '1' is shared networking, and '2' is dedicated networking.  Seems silly they couldn't manage to put descriptions in for this.
