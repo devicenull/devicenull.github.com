@@ -1,0 +1,14 @@
+---
+layout: post
+title: Overriding NS records with Unbound
+---
+
+We fairly recently had an outage with some of our DNS servers.  They were still up and running, but due to some BGP issues they were not accessible via their anycasted IP address.  This was somewhat of a problem as our zones were operating with a 5 minute TTL at the time.  This meant we had about 5 minutes to either fix it or come up with a workaround before our servers stopped communcating with each other.  For precisely this reason we run multiple Unbound servers, which are not related to our public-facing DNS servers.  I needed a way to override each nameservers A record for all of our domains.  This would let me ignore the anycasted IP address and directly query the DNS server via the management IP.
+
+Unbound makes this process pretty simple, though it required some reading of the documentation.  This really isn't meant to be a long term solution, it was just enough to keep us running until BGP was fixed (and our DNS TTL was increased):
+
+<pre class="code">
+	local-zone: "example.com" transparent
+	local-data: "ns1.example.com. IN A 10.10.10.10"
+	local-data: "ns2.example.com. IN A 10.10.10.10"
+</pre>

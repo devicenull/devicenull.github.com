@@ -1,0 +1,14 @@
+---
+layout: post
+title: Matching on relay IP with ISC DHCPD
+---
+
+We've started using DHCP agent forwarding to run DHCP servers across our network.  For one of our setups, we needed to be able to assign IP addresses based on the IP address of the relay agent.  There isn't a built in reference to this that I could find, so you're stuck matching against the raw packet contents.  This is pretty straightforward:
+
+<pre class="code">
+	class "myclass" {
+		match if packet(24,4) = 10:10:10:01;
+	}
+</pre>
+
+Just make sure to convert the IP you're looking for to hex.  If you have the option, it's really a lot easier to use a DHCP subscriber tag.  If you go with the relay agent IP, you need to make sure that it's consistently one IP (as it may change if you have multiple subnets on the same VLAN).
