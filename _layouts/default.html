@@ -26,6 +26,12 @@
 			padding-top: 50px;
 		}
 
+		#header a, #header a:visited, #header a:hover
+		{
+			text-decoration: none;
+			color: #000;
+		}
+
 		#body
 		{
 			width: 73%;
@@ -101,7 +107,7 @@
 </head>
 <body>
 	<div id="header">
-		<h3>Hello world</h3>
+		<h3><a href="/">Hello world</a></h3>
 	</div>
 	<div id="body">
 		{{ content }}
