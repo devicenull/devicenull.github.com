@@ -1,0 +1,16 @@
+---
+layout: post
+title: Failure handling in resolv.conf
+---
+
+We had an interesting outage today.  I was performing maintenance on the DNS server listed first in resolv.conf.  I needed to reboot the machine to apply some kernel tweaks (switching to HPET from TSC to increase NTP accuracy).  As soon as the box we down we started seeing very long load times on most of our web servers.  It turns out that the DNS resolver library will wait up to 5 seconds before moving on to the second server.  This would be okay if it only happened once, but it was a 5 second delay on every lookup.
+
+Ideally, it would send out requests to every DNS server listed and just accept the result from the first one to respond.  I realize this could increase resource usage significantly, but that's something I'd be willing to deal with.  I was told (by some people in ##infra-talk) that if you run a caching resolver on every machine you can get this behaviour.  That wasn't something I was willing to roll out without a bit more planning, so I settled for the next best solution.
+
+resolv.conf has an 'options' line that you can use to do a few things.  I lowered the DNS timeout, changed it to only do one attempt per DNS server, and randomize the order of the DNS servers.  This should mean that if I lose a DNS recursor and  it happens to be the current one, I should only have a one second delay added to every request.  One second isn't great, but it would allow our systems to function mostly normally.
+
+The syntax for this is:
+
+<pre class="code">
+	options timeout:1 rotate attempts:1
+</pre>
