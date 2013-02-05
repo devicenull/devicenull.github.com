@@ -8,13 +8,14 @@
 		{
 			padding-left: 30px;
 			padding-right: 30px;
+			background-image: url('/img/skelatal_weave.png');
 		}
-		
+
 		p
 		{
 			text-indent: 50px;
 		}
-		
+
 		#header
 		{
 			height: 100px;
@@ -24,51 +25,45 @@
 			text-align: center;
 			padding-top: 50px;
 		}
-		
+
 		#body
 		{
 			width: 73%;
 			float: left;
 		}
-		
+
 		#nav
 		{
 			width: 25%;
 			float: left;
 			padding-left: 1%;
 		}
-		
-		#aboutme
-		{
-			background-color: #EEEEEE;
-			border-radius: 5px;
-			padding: 0 0 2px 5px;
-		}
-		
-		.post
+
+		.post, .block
 		{
 			border: 1px solid grey;
 			border-radius: 10px;
 			padding: 5px 5px 5px 5px;
 			margin-bottom: 10px;
+			background-color: white;
 		}
-		
+
 		.post_title
 		{
 			font-weight: bold;
 			font-size: 125%;
 		}
-		
+
 		.post_title a
 		{
 			text-decoration: none;
 			color: black;
 		}
-		
+
 		.code
 		{
 			width: 100%;
-			background-color: #333333;
+			background-image: url('/img/low_contrast_linen.png');
 			color: #e1e6e5;
 			padding-top: 5px;
 			padding-bottom: 5px;
@@ -93,20 +88,22 @@
 	</div>
 	<div id="body">
 		{{ content }}
+
 	</div>
 	<div id="nav">
-		<div id="aboutme">
-			<h3>About Me</h3>
+		<div id="aboutme" class="block">
+			<span class="post_title">About Me</span><br>
 			Brian "devicenull" Rak<br>
 			Sysadmin. Developer.<br>
-			I also suck at picking colors, which is why everything is grey.
 		</div>
-		<h3>Other Posts:</h3>
-		<ul>
-			{% for post in site.posts %}
-				<li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
-			{% endfor %}
-		</ul>
+		<div class="block">
+			<span class="post_title">Other Posts:</span>
+			<ul>
+				{% for post in site.posts %}
+					<li><span>{{ post.date | date_to_string }}</span> &raquo; <a href="{{ post.url }}">{{ post.title }}</a></li>
+				{% endfor %}
+			</ul>
+		</div>
 	</div>
 </body>
 </html>
