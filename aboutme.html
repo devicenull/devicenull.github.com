@@ -1,0 +1,72 @@
+---
+layout: post
+title: About Me
+---
+	<script type="text/javascript">
+		$(document).ready(function () {
+			$('.jobdesc').hide();
+			$('.job').click(function () {
+				var name = $(this).attr('name');
+				$('.jobdesc[name='+name+']').toggle();
+			})
+			$('.jobdesc[name=softwaredev_constant]').show();
+		});
+	</script>
+
+<div class="job" name="softwaredev_constant">
+	<div class="downarrow"></div>
+		Software Developer @ <a target="_blank" href="http://www.gameservers.com/">GameServers.com</a>/<a target="_blank" href="http://www.constant.com/">Constant.com</a> 2010-Current
+	</div>
+	<div class="jobdesc" name="softwaredev_constant">
+		<ul>
+			<li>Implemented automated installation, automated configuration management (Puppet), and automated monitoring (Icinga/Nagios) for all legacy webservers</li>
+			<li>Developed and maintained internal and external websites</li>
+			<li>Implemented IPv6 across all public webservers</li>
+			<li>Implemented redundant, highly-available load balancer for customer-facing websites</li>
+
+			<li>Implemented Active Directory setup for globally distributed fleet of Windows 2003 and 2008R2 servers</li>
+			<li>Developed automated OS provisioning system for rapid deployment and configuration of Windows and Linux systems</li>
+			<li>Developed automated provisoning and monitoring system for all managed PDUs within our datacenter</li>
+			<li>Developed custom FTP server to fit authentication and security needs</li>
+
+			<li>Troubleshooted issues deploying game server software on a global scale</li>
+			<li>Implemented Games For Windows Live dedicated servers</li>
+			<li>Planned Microsoft XLSP deployment for AAA Title</li>
+
+			<li>Integerated Gemini Cloudian S3 product into custom billing and management system</li>
+
+		</ul>
+	</div>
+	<div class="job" name="support_gameservers">
+		<div class="downarrow"></div>
+		Technical Support @ <a target="_blank" href="http://www.gameservers.com/">GameServers.com</a> 2007-2010
+	</div>
+	<div class="jobdesc" name="support_gameservers">
+		<ul>
+			<li>Managed customer complaints and requests for their rented servers</li>
+			<li>Developed FAQ system to reduce number of similar customer questions and provide quicker support</li>
+			<li>Designed and implemented custom CDN product</li>
+		</ul>
+	</div>
+	<div class="job" name="support_antares">
+		<div class="downarrow"></div>
+		Software Developer @ Antares Computing 2004-2006
+	</div>
+	<div class="jobdesc" name="support_antares">
+		<ul>
+			<li>Developed custom MSSQL backend software for various school districts and professional organizations</li>
+			<li>Developed custom data migration scripts from VAX/VMS and other legacy systems</li>
+		</ul>
+	</div>
+	<div class="job" name="misc">
+		<div class="downarrow"></div>
+		Miscellaneous Projects
+	</div>
+	<div class="jobdesc" name="misc">
+		<ul>
+			<li>Developed <a target="_blank" href="https://github.com/devicenull/ns2update/">automatic updater</a> for Natural Selection 2</li>
+			<li>Developed <a target="_blank" href="https://github.com/devicenull/ns2web/">web interface</a> for Natural Selection 2 dedicated servers</li>
+			<li>Developed <a target="_blank" href="http://ns2servers.devicenull.org">global server monitor</a> for Natural Selection 2 dedicated servers</li>
+		</ul>
+	</div>
+</div>
