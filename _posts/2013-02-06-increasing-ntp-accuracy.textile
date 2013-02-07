@@ -1,0 +1,14 @@
+---
+layout: post
+title: Increasing NTP Accuracy
+---
+
+At work, I run a few NTP servers.  I use my own rather then random pool ones to ensure that all my servers are syncing to the same clocks.  With NTP pool servers, you can end up with slightly different times.  I've been looking into ways of lowering rootdispersion without having to have external hardware (it's tough to get GPS signal in a datacenter).  The only one I've been able to find is enabling HPET, and forcing linux to use it as it's clock source.  I've made this change on a couple machines, and the rootdispersion value roughly halved.  I'm also seeing a decreased 'frequency' and 'noise'.
+
+This is pretty easy to do, just and
+
+<pre class="code">
+	hpet=force clocksource=hpet
+</pre>
+
+to the kernel command line, and reboot.
