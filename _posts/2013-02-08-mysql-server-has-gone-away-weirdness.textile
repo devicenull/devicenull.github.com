@@ -34,9 +34,9 @@ After a little while, STDERR gets closed, and it changed to this:
 	root     perl5.8.9   2387    3 /        34057140 -rw-r--r--   80965  w
 </pre>
 
-(STDERR was the #2 file descriptior there)
+(STDERR was the #2 file descriptor there)
 
-Then, MySQL connects and gets assigned the #2 file descriptior:
+Then, MySQL connects and gets assigned the #2 file descriptor:
 
 <pre class="code">
 	root     perl5.8.9   2387 root /             2 drwxr-xr-x     512  r
