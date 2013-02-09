@@ -1,0 +1,65 @@
+---
+layout: post
+title: MySQL server has gone away weirdness
+---
+
+At work we have some servers that use a Perl script to grab some data from MySQL.  After an upgrade, we noticed that on multiple servers the server was reporting 'MySQL server has gone away' on a fairly regular basis.  It took me awhile but I finally found a way of reproducing it, and that's when things got weird.  In my experience, 'MySQL server has gone away' means you waited too long between queries and your connection timed out.  Given that we were only seeing 1-2 minutes between the last query and getting this error, that couldn't have been the case (well, unless we had the timeout set very low).
+
+After staring at this for far too long and playing with various MySQL timeout settings, I finally broke out tcpdump.  What I saw was really quite weird.  I saw a warning message from rndc (this script does rndc reload after updating DNS zones) being sent across the wire to MySQL.  MySQL responded with a 'Got packets out of order' message then the connection closed.  I checked the script and couldn't really find any reason that it would be trying to send log messages to MySQL.  A bit of research turned up that 'Got packets out of order' tends to occur when you try to access MySQL via a web browser (people get confused and put the MySQL ip/port into their web browsers).  Knowning that, the error was a pretty good sign that the MySQL client wasn't sending valid packets.
+
+We were using MySQL 5.1 to communicate with a MySQL 5.5 server, so it was possible that something changed in the protocol that wasn't fully backwards compatible.  Before I upgraded the client, I wanted to figure out why the log message was being sent in the first place.  What I found was pretty amazing to me;  the perl code was closing STDERR then reconnecting to MySQL.  This meant that the MySQL connection was being assigned the #2 file handle, which usually corresponds to STDERR.  Then, the code would do another system() call.  What ended up happening was this system() call would try to send a warning via STDERR, and Linux would forward the message directly to MySQL.  As the log message wasn't actually a MySQL query packet, the server would disconnect us, and the next query would fail with the mysterious 'MySQL has gone away error'.
+
+I was able to confirm this pretty easily with `fstat -p PID`:
+
+On the inital launch of the script, I saw this:
+
+<pre class="code">
+	root     perl5.8.9   2387 root /             2 drwxr-xr-x     512  r
+	root     perl5.8.9   2387   wd /             2 drwxr-xr-x     512  r
+	root     perl5.8.9   2387 text /        4104047 -rwxr-xr-x    7168  r
+	root     perl5.8.9   2387    0 /dev         22 crw-rw-rw-    null  r
+	root     perl5.8.9   2387    1 /dev         22 crw-rw-rw-    null  w
+	root     perl5.8.9   2387    2 /dev         22 crw-rw-rw-    null  w
+	root     perl5.8.9   2387    3 /        34057140 -rw-r--r--   80760  w
+</pre>
+
+After a little while, STDERR gets closed, and it changed to this:
+
+<pre class="code">
+	root     perl5.8.9   2387 root /             2 drwxr-xr-x     512  r
+	root     perl5.8.9   2387   wd /             2 drwxr-xr-x     512  r
+	root     perl5.8.9   2387 text /        4104047 -rwxr-xr-x    7168  r
+	root     perl5.8.9   2387    0 /dev         22 crw-rw-rw-    null  r
+	root     perl5.8.9   2387    1 /dev         22 crw-rw-rw-    null  w
+	root     perl5.8.9   2387    3 /        34057140 -rw-r--r--   80965  w
+</pre>
+
+(STDERR was the #2 file descriptior there)
+
+Then, MySQL connects and gets assigned the #2 file descriptior:
+
+<pre class="code">
+	root     perl5.8.9   2387 root /             2 drwxr-xr-x     512  r
+	root     perl5.8.9   2387   wd /             2 drwxr-xr-x     512  r
+	root     perl5.8.9   2387 text /        4104047 -rwxr-xr-x    7168  r
+	root     perl5.8.9   2387    0 /dev         22 crw-rw-rw-    null  r
+	root     perl5.8.9   2387    1 /dev         22 crw-rw-rw-    null  w
+	root     perl5.8.9   2387    2* internet stream tcp ffffff0005c38000
+	root     perl5.8.9   2387    3 /        34057140 -rw-r--r--   81695  w
+</pre>
+
+So, at this point we have a time bomb.  As long as the rest of the script doesn't produce any output on STDERR everything will continue to work (and it had continued to work for over 8 years).  However, if a misconfiguration of a server starts to produce warnings, everything goes to hell.  The fix was pretty easy, we had some code like this:
+
+<pre class="code">
+	open STDERR, '>/dev/null' or die "Can't write to /dev/null: $!";
+	$status = system ("ps -p $dnsdumppid");
+	close (STDERR);
+</pre>
+
+that got changed to:
+
+<pre class="code">
+	$status = system ("ps -p $dnsdumppid 2>/devnull");
+</pre>
+
+This has to be the weirdest bug I've ever seen.  It also would have been completely prevented if we had been using any sort of configuration management for these machines.  I haven't converted them to Puppet as they've got a pretty complex configuration and I'm not directly responsible for maintaining them.  It's tough for me to explain to people why machine they think they are running have suddenly had Puppet installed (but that's a whole other story).
