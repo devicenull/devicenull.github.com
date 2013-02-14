@@ -1,0 +1,8 @@
+---
+layout: post
+title: Virtualization
+---
+
+Wow, virtualization tech has come a long way since the last time I've looked into it.  I've been evaluating KVM for a few days, and I've been pretty impressed so far.  It's dead simple to install (yum install a few packages), and everything "just works" with some sane defaults.  Last time I looked into things like this, they all had a very complex setup process.  I was up and running with KVM in under an hour.
+
+I'll definitely be looking into using this more, even if the project I was evaluating it for doesn't pan out.  The benefits are just too great to ignore it.
