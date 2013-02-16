@@ -23,7 +23,8 @@ We had a couple options here:
 So, the first step here is to figure out how to compile and run two versions of glibc on a machine.  Compiling is no problem, it's a pretty standard configure; make; make install.  The only tricky bit here is CentOS 5 ships with a very old version of GCC and binutils.  So, I had to install gcc44 and compile a newer version of binutils.  After that, it was just a matter of:
 
 <pre class="code">
-	CFLAGS='-march=i686 -O2' CC=gcc44 CXX=gcc44-c++ ../configure --prefix=/home/glibc215 --with-binutils=/home/newbinutils/bin/ && make -j 4 && make install
+	CFLAGS='-march=i686 -O2' CC=gcc44 CXX=gcc44-c++ ../configure --prefix=/home/glibc215 \
+	 --with-binutils=/home/newbinutils/bin/ && make -j 4 && make install
 </pre>
 
 If it's not obvious there, I'm using glibc 2.15 instead of 2.17.  2.16 and 2.17 require kernel headers from a kernel newer then what we're using.   I could have grabbed a newer kernel and just used it for the headers, but I didn't need to be running the latest version of glibc.
