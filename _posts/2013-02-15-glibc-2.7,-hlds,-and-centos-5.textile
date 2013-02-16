@@ -1,0 +1,39 @@
+---
+layout: post
+title: glibc 2.7, HLDS, and CentOS 5
+---
+
+We have a number of CentOS 5 machines at work.  There's nothing terribly wrong with them, they were just installed before CentOS 6 was offically released.  End of life for CentOS 5 isn't until 2014, so we haven't felt significant pressure to upgrade (and there's not a whole lot of benefit to us for doing so).
+
+Today, Valve released an update for Counter-Strike.  Among all the changes, they switched to GCC 4.6, which brings with it a dependency on glibc 2.7.  This is somewhat of a problem for us, as CentOS 5 is only shipping with glibc 2.5.
+
+This means when I tried to start the updated server, I saw the following error:
+
+<pre class="code">
+	Error:/lib/libc.so.6: version `GLIBC_2.7' not found (required by ./engine_i486.so)
+</pre>
+
+We had a couple options here:
+
+* Upgrade all our machines to CentOS 6.  This isn't really feasible in the short term, we're talking about hundreds of machines, and it's a Friday.  Waiting really isn't a great option either, as customers aren't going to want to wait for the update (and by default old servers reboot themselves on every map change).
+* Transfer all the affected servers off onto machines running CentOS 6.  This is feasible in some of our locations, but we don't have the free hardware in a lot of places to do this.
+* Upgrade glibc on all our CentOS 5 machines.  This is a pretty complicated process, that would involve significant changes to the operating system.  glibc is too important to be simple to swap out.  It would be pretty time consuming to get this all tested and even then we'd still probably lose some machines to the upgrade.  Don't forget, the customers want this upgrade by the weekend too.
+* Install an upgraded version of glibc and run the servers off that.  This is what I ultimately decided to do.
+
+So, the first step here is to figure out how to compile and run two versions of glibc on a machine.  Compiling is no problem, it's a pretty standard configure; make; make install.  The only tricky bit here is CentOS 5 ships with a very old version of GCC and binutils.  So, I had to install gcc44 and compile a newer version of binutils.  After that, it was just a matter of:
+
+<pre class="code">
+	CFLAGS='-march=i686 -O2' CC=gcc44 CXX=gcc44-c++ ../configure --prefix=/home/glibc215 --with-binutils=/home/newbinutils/bin/ && make -j 4 && make install
+</pre>
+
+If it's not obvious there, I'm using glibc 2.15 instead of 2.17.  2.16 and 2.17 require kernel headers from a kernel newer then what we're using.   I could have grabbed a newer kernel and just used it for the headers, but I didn't need to be running the latest version of glibc.
+
+So, now I've got a fresh version of glibc sitting in /home/glibc215 and i just need a way to convince the server to run it.  Most of the suggestions I found were to edit the binary and make it use the newer version.  That's not really great for us, as we'd have to edit the binary again after every update.  Rather then do this, I decided to just call ld-linux.so.2 directly for the new exe.  To maintain compatibility with the default launcher script (hlds_run), I created a simple wrapper script:
+
+<pre class="code">
+	#!/bin/bash
+	/home/glibc215/lib/ld-linux.so.2 --library-path /home/glibc215/lib/:. ./hlds_i686 $*
+</pre>
+
+Then, I made hlds_run use this wrapper instead of the server (via the -binary command line argument).  I was pretty happy when the server started up perfectly!  This was pretty important to solve, as the other Half Life 1 games are going to be upgraded in this manner in the next couple months.
+
