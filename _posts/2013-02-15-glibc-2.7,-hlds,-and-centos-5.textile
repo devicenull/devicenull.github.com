@@ -3,7 +3,7 @@ layout: post
 title: glibc 2.7, HLDS, and CentOS 5
 ---
 
-We have a number of CentOS 5 machines at work.  There's nothing terribly wrong with them, they were just installed before CentOS 6 was offically released.  End of life for CentOS 5 isn't until 2014, so we haven't felt significant pressure to upgrade (and there's not a whole lot of benefit to us for doing so).
+We have a number of CentOS 5 (specfically, CentOS 5.9) machines at work.  There's nothing terribly wrong with them, they were just installed before CentOS 6 was offically released.  End of life for CentOS 5 isn't until 2014, so we haven't felt significant pressure to upgrade (and there's not a whole lot of benefit to us for doing so).
 
 Today, Valve released an update for Counter-Strike.  Among all the changes, they switched to GCC 4.6, which brings with it a dependency on glibc 2.7.  This is somewhat of a problem for us, as CentOS 5 is only shipping with glibc 2.5.
 
@@ -33,7 +33,7 @@ So, now I've got a fresh version of glibc sitting in /home/glibc215 and i just n
 
 <pre class="code">
 	#!/bin/bash
-	/home/glibc215/lib/ld-linux.so.2 --library-path /home/glibc215/lib/:. ./hlds_i686 $*
+	/home/glibc215/lib/ld-linux.so.2 --library-path /home/glibc215/lib/:. ./hlds_linux $*
 </pre>
 
 Then, I made hlds_run use this wrapper instead of the server (via the -binary command line argument).  I was pretty happy when the server started up perfectly!  This was pretty important to solve, as the other Half Life 1 games are going to be upgraded in this manner in the next couple months.

@@ -3,7 +3,7 @@ layout: post
 title: Dell c6220 IPMI controller odditites
 ---
 
-The networking configuration of the IPMI controllers on our new Dell c6220 boxes is strange to say the least.  We've encountred issues where the IPMI controller binds to a random interface, usually making itself inaccessible to the world.
+The networking configuration of the IPMI controllers on our new Dell c6220 boxes is strange to say the least.  We've encountered issues where the IPMI controller binds to a random interface, usually making itself inaccessible to the world.
 
 I've done some digging into this, and it seems that the IPMI controller is really an embedded Linux device (no surprise there).  It has two main network interfaces:
 
