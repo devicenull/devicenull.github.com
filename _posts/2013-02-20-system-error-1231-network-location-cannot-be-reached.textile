@@ -1,0 +1,6 @@
+---
+layout: post
+title: System Error 1231 Network Location Cannot Be Reached
+---
+
+One of our servers was failing to backup for awhile.  `net use` would show 'System Error 1231 Network Location Cannot Be Reached' when we tried to mount the remote share.  This turns out to have been a dumb issue, at some point the 'Client for Microsoft Networks' got disabled on the primary network adapter.  Once I reenabled it, everything worked perfectly again.
