@@ -1,0 +1,12 @@
+---
+layout: post
+title: Foreman boot menu
+---
+
+We have a somewhat unique (well, probably not unique but not frequently discussed) hardware build process.  We start with a request to our NOC to build a machine with certain specs.  They do so, and run a couple scripts before handing it over to us.  At this point, we manually undo some of the steps they did, then manually run the tail end of Foreman's provisioning script (install EPEL, install Puppet, edit puppet.conf, service puppet start, log in to puppetmaster and `puppet ca sign`, restart puppet again).  This is pretty tedious, and it's really time consuming to set up a new machine. This really happens because we're using Foreman wrong.  Our network setup is complex enough that Foreman doesn't really know how to reserve IPs for individual machines.  We've also got a custom PXE system, so Foreman isn't even the default next-host.
+
+Today, I got tired of dealing with all this.  I spent a bunch of time fixing up our Foreman boot system (it had slowly decayed over time because nothing was actually using it).  I also made some changes to our PXE system so that it generates a list of hosts set to 'Build' in Foreman, and lets you choose which one the new machine should be.  Once you've chosen, it reconfigures the network adapter (yay, iPXE) and chainloads to Foreman.  This means that I can now setup a machine in Foreman, and tell our NOC staff to netboot the machine, and choose option X.  The rest of it will be handled for them, which means quicker setups, fewer mistakes, and in general everyone is happier.
+
+We've set our PXE system up so it works across our entire network, so I no longer have to get them to install a machine in one location then drag it across the datacenter to it's final location.
+
+I wish I could provide code for this, but it's pretty much tied to our internal systems.  It's not complicated at all to write, it's a couple very basic SQL queries.
