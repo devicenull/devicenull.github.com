@@ -9,4 +9,65 @@ Today, I got tired of dealing with all this.  I spent a bunch of time fixing up 
 
 We've set our PXE system up so it works across our entire network, so I no longer have to get them to install a machine in one location then drag it across the datacenter to it's final location.
 
-I wish I could provide code for this, but it's pretty much tied to our internal systems.  It's not complicated at all to write, it's a couple very basic SQL queries.
+Note: All the code that follows is a reconstruction of what I did earlier.  My actual scripts reference internal systems rather then Foreman, so some of this might be buggy!
+
+The process looks like this:
+
+1) Machine boots up and grabs a generic iPXE config.  This contains an option that goes to a custom PHP script.  Basically, it looks like this:
+
+<pre class="code">
+	#!ipxe
+
+	menu iPXE boot menu
+	item localboot          Local boot
+	item Foreman            Choose foreman options
+	choose --default localboot --timeout 60000 bootoption && goto ${bootoption} ||
+
+	:localboot
+	exit
+
+	:foreman
+	chain http://${next-server}/showpendinghosts.php
+</pre>
+
+2) showpendinghosts.php generates a list of all the hosts that are currently in the build state in Foreman.  It looks a little bit like this:
+
+<pre class="code">
+	#!ipxe
+
+	:start
+	menu Foreman Boot Options
+	item --gap --	-------- Pending Hosts --------
+	<?php
+		$db = mysql_connect();
+		$host = '';
+		$res = mysql_query('select * from hosts where build=1');
+		while ($row = mysql_fetch_assoc($res))
+		{
+			$res2 = mysql_query('select * from subnets where inet_aton("'.$row['ip'].'") between inet_aton(from) and inet_aton(to)');
+			$subnet = mysql_fetch_assoc($res);
+			$host .= "
+:host_{$row['id']}
+set netX/ip {$row['ip']}
+set netX/gateway {$subnet['gateway']}
+set netX/netmask {$subnet['mask']}
+chain http://your_foreman_server/unattended/gPXE
+";
+			echo "item host_{$row['id']}	Install {$row['name']}\n";
+		}
+	?>
+
+	choose bootoption && goto ${bootoption} ||
+	echo Invalid option selected!
+	shell
+
+	<?php
+		echo $host;
+	?>
+</pre>
+
+Prerequsites:
+
+1) Your DHCP server must be setup to serve "iPXE":http://ipxe.org/howto/chainloading instead of pxelinux.  See
+2) Foreman must have "gPXE support":http://wiki.theforeman.org/projects/foreman/wiki/Fetch_boot_files_via_http_instead_of_TFTP enabled
+3) All your subnets in Foreman must have a from/to IP address range set.  You can avoid this with some clever bitmask tricks with the gateway/subnet, but I have not implemented those.
