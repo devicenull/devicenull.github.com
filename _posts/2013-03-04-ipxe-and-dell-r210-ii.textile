@@ -1,0 +1,10 @@
+---
+layout: post
+title: iPXE and Dell R210 II
+---
+
+Today, I was trying to PXE boot a Dell PowerEdge R210 II system in order to clone the hard drive.  We've settled on iPXE to be our PXE boot system.  We've been using ipxe.pxe (which is iPXE with all it's own drivers built in) instead of undionly.kpxe (which makes iPXE try to use the UNDI drive) as it tends to perform a little better.  With the R210's there's a BIOS/EFI issue that prevents this from working.  If you try to boot with ipxe.pxe, you get an error 'Try to free Memory without Signature'.
+
+Based on my research, the only way to fix this currently is to switch to undionly.kpxe.  The iPXE driver doesn't seem to handle this case correctly.
+
+For reference, this was with yesterday's build of iPXE (2013-03-04) and with v2.2.3 of the R210 BIOS (which uses Broadcom UNDI PXE-2.1 v7.2.3).
