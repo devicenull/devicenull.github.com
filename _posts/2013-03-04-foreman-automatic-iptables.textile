@@ -1,0 +1,50 @@
+---
+layout: post
+title: Foreman Automatic IPTables
+---
+
+Just as an extra layer of security, Foreman and our Puppetmaster are behind IPTables.  We restrict access to them to only known hosts.  Up until today, I've been maintaining the list of known hosts manually.  That's been a pretty silly process, as we already have a list of all the hosts that would ever be trying to access it.  I setup some pretty simple IPTables rules, and a quick PHP script to process them.  These details assume you're using CentOS as the server host, but it should be possible in any OS.
+
+1) In /etc/sysconfig/iptables, create two new chains by adding these two lines after the :OUTPUT line:
+
+<pre class="code">
+	:HOSTS - [0:0]
+	:BUILDHOSTS - [0:0]
+</pre>
+
+2) Modify your existing foreman/puppet firewall rules:
+
+<pre class="code">
+	# foreman (only used during initial build)
+	-A INPUT -m tcp -p tcp --dport 3000 -j BUILDHOSTS -m comment --comment "foreman"
+	# puppet
+	-A INPUT -m tcp -p tcp --dport 8140 -j HOSTS -m comment --comment "puppet"
+</pre>
+
+This causes IPTables to jump to the BUILDHOSTS/HOSTS chains when packets for either port are encountered.  This simplifies the management of those chains, as we can just flush them and rebuild.  We don't have to worry about finding and removing hosts.
+
+3) Create the script to populate it:
+
+<pre class="code">
+	<?php
+        $db = mysql_connect();
+
+        exec('/sbin/iptables -F HOSTS');
+        exec('/sbin/iptables -F BUILDHOSTS');
+        $res = mysql_query('select id, name, ip, build from hosts');
+        while ($cur = mysql_fetch_assoc($res))
+        {
+            exec('/sbin/iptables -A HOSTS -s '.$cur['ip'].' -j ACCEPT -m comment --comment '.escapeshellarg($cur['name']));
+            if ($cur['build'] == 1)
+            {
+                exec('/sbin/iptables -A BUILDHOSTS -s '.$cur['ip'].' -j ACCEPT -m comment --comment '.escapeshellarg($cur['name']));
+            }
+        }
+        exec('/sbin/iptables -A HOSTS -j DROP');
+        exec('/sbin/iptables -A BUILDHOSTS -j DROP');
+    ?>
+</pre>
+
+This script needs to run as root (or you can modify it to use sudo).  Each time it runs it flushes the two existing tables then regenerates them from the database.
+
+Once this is running as a cron, you don't have to worry about modifying IPTables anymore.  It's pretty handy, as it removes one extra step that was previously needed to setup new hosts.
