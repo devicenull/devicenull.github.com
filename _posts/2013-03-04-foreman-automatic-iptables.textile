@@ -26,7 +26,7 @@ This causes IPTables to jump to the BUILDHOSTS/HOSTS chains when packets for eit
 3) Create the script to populate it:
 
 <pre class="code">
-	<?php
+    <?php
         $db = mysql_connect();
 
         exec('/sbin/iptables -F HOSTS');
