@@ -1,8 +1,9 @@
+#!/usr/bin/python
 import time, subprocess 
 
 title = raw_input("Title:")
 
-filename = "_posts\\%s-%s.textile" % (time.strftime('%Y-%m-%d'), title.replace(" ","-").lower().strip())
+filename = "_posts/%s-%s.textile" % (time.strftime('%Y-%m-%d'), title.replace(" ","-").lower().strip())
 
 print "filename: %s" % filename
 
@@ -18,4 +19,3 @@ title: %s
 
 f.close()
 
-subprocess.Popen("D:\\Apps\\Notepad++\\notepad++.exe %s" % filename)
