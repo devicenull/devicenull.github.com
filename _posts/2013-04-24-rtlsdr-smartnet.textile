@@ -10,7 +10,6 @@ So, with my compiled version, you can copy the plugin to the latest development 
 I should note this plugin doesn't seem to have all the features of the original (at the very least it's missing the 'single' log file), but it does do the minimum trunking features correctly.
 
 Update: Hmm, seems I was violating the license for SDR# by redistributing it.  I've changed the zip to only be the plugin itself, you'll need to do this to get it working:
-
 1) Download SDR# Dev and SDR# RTLSDR Plugin from "here":http://sdrsharp.com/index.php/downloads
 2) Download the RTLDSR driver from "here":http://sdr.osmocom.org/trac/raw-attachment/wiki/rtl-sdr/RelWithDebInfo.zip
 3) Download the Trunker plugin from "here":/files/sdrrelease.zip
