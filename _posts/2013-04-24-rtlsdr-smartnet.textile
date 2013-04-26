@@ -8,3 +8,11 @@ I recently purchased a few RTLSDR devices.  The town where I live has uses a Mot
 So, with my compiled version, you can copy the plugin to the latest development version of SDR#.  This lets you use all the newer versions of SDR# with the Trunking features.  You can download the binaries <a href="/files/sdrrelease.zip">here</a>.  There is one issue here, the code expects that you have a C:\Temp directory, and will crash on launch if this directory doesn't exist.
 
 I should note this plugin doesn't seem to have all the features of the original (at the very least it's missing the 'single' log file), but it does do the minimum trunking features correctly.
+
+Update: Hmm, seems I was violating the license for SDR# by redistributing it.  I've changed the zip to only be the plugin itself, you'll need to do this to get it working:
+
+1) Download SDR# Dev and SDR# RTLSDR Plugin from "here":http://sdrsharp.com/index.php/downloads
+2) Download the RTLDSR driver from "here":http://sdr.osmocom.org/trac/raw-attachment/wiki/rtl-sdr/RelWithDebInfo.zip
+3) Download the Trunker plugin from "here":/files/sdrrelease.zip
+4) Copy all the files from #1 into a directory, copy the dlls from #2 rtl-sdr-release/x32/ to the same directory
+5) Add the plugin by copying the files from #3 (overwrite the .Config file with my version)
