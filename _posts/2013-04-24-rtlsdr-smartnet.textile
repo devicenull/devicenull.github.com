@@ -15,3 +15,5 @@ Update: Hmm, seems I was violating the license for SDR# by redistributing it.  I
 3) Download the Trunker plugin from "here":/files/sdrrelease.zip
 4) Copy all the files from #1 into a directory, copy the dlls from #2 rtl-sdr-release/x32/ to the same directory
 5) Add the plugin by copying the files from #3 (overwrite the .Config file with my version)
+
+This is a pretty annoying process, there's not a whole lot I can do about that (SDR# is not actually open source software, so I can't redistribute it).  This is probably the only development work I'll do for this.  I'm not really going to spend a bunch of time developing for someone else's software.
