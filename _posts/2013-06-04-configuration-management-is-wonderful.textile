@@ -1,0 +1,12 @@
+---
+layout: post
+title: Configuration Management is wonderful
+---
+
+We've been using Puppet for a few years at this point.  We started off using it to build our development machines (though that really wasn't used, it was a great way to start experiementing with it).  Over time, we've been replacing previously unmanaged machines with Puppet managed machines as they die or need upgrading.  I was quite surprised yesterday when we broke 70 machines.  I had never realized that we had this many machines running our infrastructure.  I have no idea how we managed them effectively before Puppet.  With that many machines, you can spend all your time just dealing with software upgrades and basic maintenance.
+
+It was what happened when we were adding the 70th machine that really surprised me.  Over the weekend we had a hard drive in a machine die.  Normally this wouldn't have been a problem, as we run RAID-1 as a standard.  This machine however was one of our older unmanaged machines, and was still running a single drive.  Luckily, we had multiple machines running this website and our load balancer noticed the failure and stopped sending traffic to it.  Once Monday rolled around and it was time to replace the machine, I started setting the new one up with Puppet.
+
+By this point, we have a pretty solid base configuration down, and most of our supporting modules are pretty solid.  I found that I could focus just on getting the application specific configuration going, and not have to worry about all the other bits that go with it.  This greatly reduced the amount of time necessary to get replacement servers going.  Puppet reduced what would have been a multi-day setup process down to a couple hours.  By itself, that's great.   Even better is that next time we have a failure of one of these machines, we're down to a couple minutes to setup Puppet.  There's no need to dig into the application to figure out what dependencies it has, nor track down any custom configuration files it needs.
+
+Before Puppet each of our machines had a slightly different configuration.  We spent a ton of time trying to keep all the software up to date and running similar configurations.  Now that we don't have to do that, we've freed up a bunch of time to actually spend developing things.
