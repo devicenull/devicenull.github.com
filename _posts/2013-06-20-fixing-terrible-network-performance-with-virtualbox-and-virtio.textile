@@ -1,0 +1,14 @@
+---
+layout: post
+title: Fixing terrible network performance with Virtualbox and VirtIO
+---
+
+I was recently rebuilding the development VM I use at work.  Part of this was upgrading from CentOS 6 32bit to CentOS 6 64 bit (to match our production servers).  My 64bit VM was seeing terrible network performance, but a fresh install of the 32bit version worked perfectly.  The VirtualBox IRC channel was less then helpful (blaming "buggy virtio drivers", which is code for "I can't be bothered to think about your problem").  I eventually started going through all the different options that could be toggled, and found that enabling HPET on the guest fixed the performance issues.  We're talking going from a 3 Mb/s to 100 Mb/s (the limit of my network).  As a comparison, emulated network cards were seeing about 8-10 Mb/s.
+
+The only command necessary was:
+
+<pre class="code">
+	VBoxManage modifyvm devm2 --hpet on
+</pre>
+
+
