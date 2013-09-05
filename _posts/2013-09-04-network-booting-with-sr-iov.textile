@@ -1,0 +1,22 @@
+---
+layout: post
+title: Network booting with SR-IOV
+---
+
+I've been doing some research into using KVM to virtualize some of our machines.  Our workloads are very latency sensitive, and require excellent network performance.  We have hardware (Intel I350 Chipset) that supports SR-IOV.  SR-IOV is pretty cool, each network card exposes 7 different 'virtual functions' (virtual network cards), as well as one 'physical function' (used by the host).  Each of these VFs can be mapped to an individual virtual machine.  This isn't emulation, the VM is communicating directly with the network card.  This decreases latency (one less emulation step) and increases performance.  We've seen significant performance gains from using this, despite the extra complexity it adds.
+
+As part of our virtualization setup, we rely on iPXE to get the machine running and installed.  We're currently doing fresh installs for each virtual machine, so network booting is essential.  Virtual functions, however, do not have any access to the onboard option rom, so they have no way of PXE booting.  This is actually pretty easy to fix by making qemu load iPXE.
+
+Step 1) Compile a rom for your network card. iPXE has this process pretty "well documented":http://ipxe.org/howto/romburning .  For my card, I had a PCI ID of 8086:1520.  I used "rom-o-matic":http://rom-o-matic.eu to compile my rom file.  Copy this file to the host somewhere
+
+Step 2) Edit your libvirt interface definition to include a <rom> entry, like so:
+
+<pre class="code">
+	<interface type='network'>
+		<source network='sriov'/>
+		<rom bar='on' file='/root/80861520.rom'/>
+	</interface>
+</pre>
+
+Reboot, and you should see iPXE start up.  This was actually a lot easier then I was expecting it to be.
+
