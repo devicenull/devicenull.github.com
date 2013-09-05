@@ -6,6 +6,7 @@ title: Python Netflow v5 Parser
 This is a very simple Netflow v5 parser written in Python.  Might come in handy for quick experiments.  Netflow v5 is pretty limited, so I wouldn't recommend it if you need anything other then basic packet counts.  I'm still evaluating alternatives, so I don't have any further recommendations.
 
 <pre class="code">
+{% highlight python %}
 	import socket, struct
 
 	from socket import inet_ntoa
@@ -53,5 +54,6 @@ This is a very simple Netflow v5 parser written in Python.  Might come in handy 
 
 		# Do something with the netflow record..
 		print "%s:%s -> %s:%s" % (nfdata['saddr'],nfdata['sport'],nfdata['daddr'],nfdata['dport'])
+{% endhighlight %}
 </pre>
 
