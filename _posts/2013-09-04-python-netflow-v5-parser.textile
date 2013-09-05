@@ -3,7 +3,7 @@ layout: post
 title: Python Netflow v5 Parser
 ---
 
-This is a very simple Netflow v5 parser written in Python.  Might come in handy for quick experiments
+This is a very simple Netflow v5 parser written in Python.  Might come in handy for quick experiments.  Netflow v5 is pretty limited, so I wouldn't recommend it if you need anything other then basic packet counts.  I'm still evaluating alternatives, so I don't have any further recommendations.
 
 <pre class="code">
 	import socket, struct
@@ -27,6 +27,7 @@ This is a very simple Netflow v5 parser written in Python.  Might come in handy 
 		# It's pretty unlikely you'll ever see more then 1000 records in a 1500 byte UDP packet
 		if count <= 0 or count >= 1000:
 			print "Invalid count %s" % count
+			continue
 
 		uptime = socket.ntohl(struct.unpack('I',buf[4:8])[0])
 		epochseconds = socket.ntohl(struct.unpack('I',buf[8:12])[0])
