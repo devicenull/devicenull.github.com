@@ -11,12 +11,12 @@ Step 1) Compile a rom for your network card. iPXE has this process pretty "well 
 
 Step 2) Edit your libvirt interface definition to include a <rom> entry, like so:
 
-<pre class="code">
-	<interface type='network'>
-		<source network='sriov'/>
-		<rom bar='on' file='/root/80861520.rom'/>
-	</interface>
-</pre>
+{% highlight xml %}
+<interface type='network'>
+	<source network='sriov'/>
+	<rom bar='on' file='/root/80861520.rom'/>
+</interface>
+{% endhighlight %}
 
 Reboot, and you should see iPXE start up.  This was actually a lot easier then I was expecting it to be.
 

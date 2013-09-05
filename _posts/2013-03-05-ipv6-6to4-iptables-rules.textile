@@ -5,34 +5,39 @@ title: IPv6 6to4 iptables rules
 
 Over the last few days, I've been rolling out centralized logging to our machines (with Logstash).  I noticed that our public NTP server with IPv6 enabled was printing a rather large amount of errors to syslog:
 
-<pre class="code">
-	ntpd: sendto(2002:c0a8:1903:1234:7a44:76ff:fe96:251c) (fd=19): Network is unreachable
-	ntpd: sendto(2002:c0a8:1903:1234:7a44:76ff:fe96:251c) (fd=19): Network is unreachable
+<pre class="highlight">
+
+ntpd: sendto(2002:c0a8:1903:1234:7a44:76ff:fe96:251c) (fd=19): Network is unreachable
+ntpd: sendto(2002:c0a8:1903:1234:7a44:76ff:fe96:251c) (fd=19): Network is unreachable
+
 </pre>
 
 After doing some research, I was able to determine that these were 6to4 addresses.  6to4 works by embedding the v4 address into the v6 address.  The problem here is that all these IPs corresponded to RFC 1918 addresses, so there was no real way to send them back to the original host.  The 6to4 RFC indicates that using RFC 1918 addresses in this manner results in undefined behavior.
 
 It turns out that CentOS 6 sets up some routes to block these addresses, which is why I was seeing Network is unreachable rather then some other error message.  You can verify this with:
 
-<pre class="code">
-	$ ip -6 route show
-	unreachable 2002:a00::/24 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
-	unreachable 2002:7f00::/24 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
-	unreachable 2002:a9fe::/32 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
-	unreachable 2002:ac10::/28 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
-	unreachable 2002:c0a8::/32 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
-	unreachable 2002:e000::/19 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
-	unreachable 3ffe:ffff::/32 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
-</pre>
+{% highlight bash %}
+$ ip -6 route show
+unreachable 2002:a00::/24 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
+unreachable 2002:7f00::/24 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
+unreachable 2002:a9fe::/32 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
+unreachable 2002:ac10::/28 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
+unreachable 2002:c0a8::/32 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
+unreachable 2002:e000::/19 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
+unreachable 3ffe:ffff::/32 dev lo  metric 1024  error -101 mtu 16436 advmss 16376 hoplimit 4294967295
+{% endhighlight %}
 
 Since any response to packets from these IPs isn't going to leave the machine, there's very little point in accepting them in the first place.  I added some ip6tables rules to block them:
 
-<pre class="code">
-	-A INPUT -s 2002:a00::/24 -j DROP
-	-A INPUT -s 2002:7f00::/24 -j DROP
-	-A INPUT -s 2002:a9fe::/32 -j DROP
-	-A INPUT -s 2002:ac10::/28 -j DROP
-	-A INPUT -s 2002:c0a8::/32 -j DROP
-	-A INPUT -s 2002:e000::/19 -j DROP
-	-A INPUT -s 3ffe:ffff::/32 -j DROP
+<pre class="highlight">
+
+-A INPUT -s 2002:a00::/24 -j DROP
+-A INPUT -s 2002:7f00::/24 -j DROP
+-A INPUT -s 2002:a9fe::/32 -j DROP
+-A INPUT -s 2002:ac10::/28 -j DROP
+-A INPUT -s 2002:c0a8::/32 -j DROP
+-A INPUT -s 2002:e000::/19 -j DROP
+-A INPUT -s 3ffe:ffff::/32 -j DROP
+
 </pre>
+

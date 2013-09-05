@@ -15,56 +15,56 @@ The process looks like this:
 
 1) Machine boots up and grabs a generic iPXE config.  This contains an option that goes to a custom PHP script.  Basically, it looks like this:
 
-<pre class="code">
-	#!ipxe
+{% highlight bash %}
+#!ipxe
 
-	menu iPXE boot menu
-	item localboot          Local boot
-	item Foreman            Choose foreman options
-	choose --default localboot --timeout 60000 bootoption && goto ${bootoption} ||
+menu iPXE boot menu
+item localboot          Local boot
+item Foreman            Choose foreman options
+choose --default localboot --timeout 60000 bootoption && goto ${bootoption} ||
 
-	:localboot
-	exit
+:localboot
+exit
 
-	:foreman
-	chain http://${next-server}/showpendinghosts.php
-</pre>
+:foreman
+chain http://${next-server}/showpendinghosts.php
+{% endhighlight %}
 
 2) showpendinghosts.php generates a list of all the hosts that are currently in the build state in Foreman.  It looks a little bit like this:
 
-<pre class="code">
-	#!ipxe
+{% highlight php %}
+#!ipxe
 
-	:start
-	menu Foreman Boot Options
-	item --gap --	-------- Pending Hosts --------
-	<?php
-		$db = mysql_connect();
-		$host = '';
-		$res = mysql_query('select * from hosts where build=1');
-		while ($row = mysql_fetch_assoc($res))
-		{
-			$res2 = mysql_query('select * from subnets where inet_aton("'.$row['ip'].'") between inet_aton(from) and inet_aton(to)');
-			$subnet = mysql_fetch_assoc($res);
-			$host .= "
-				:host_{$row['id']}
-				set netX/ip {$row['ip']}
-				set netX/gateway {$subnet['gateway']}
-				set netX/netmask {$subnet['mask']}
-				chain http://your_foreman_server/unattended/gPXE
-			";
-			echo "item host_{$row['id']}	Install {$row['name']}\n";
-		}
-	?>
+:start
+menu Foreman Boot Options
+item --gap --	-------- Pending Hosts --------
+<?php
+	$db = mysql_connect();
+	$host = '';
+	$res = mysql_query('select * from hosts where build=1');
+	while ($row = mysql_fetch_assoc($res))
+	{
+		$res2 = mysql_query('select * from subnets where inet_aton("'.$row['ip'].'") between inet_aton(from) and inet_aton(to)');
+		$subnet = mysql_fetch_assoc($res);
+		$host .= "
+			:host_{$row['id']}
+			set netX/ip {$row['ip']}
+			set netX/gateway {$subnet['gateway']}
+			set netX/netmask {$subnet['mask']}
+			chain http://your_foreman_server/unattended/gPXE
+		";
+		echo "item host_{$row['id']}	Install {$row['name']}\n";
+	}
+?>
 
-	choose bootoption && goto ${bootoption} ||
-	echo Invalid option selected!
-	shell
+choose bootoption && goto ${bootoption} ||
+echo Invalid option selected!
+shell
 
-	<?php
-		echo $host;
-	?>
-</pre>
+<?php
+	echo $host;
+?>
+{% endhighlight %}
 
 Prerequsites:
 

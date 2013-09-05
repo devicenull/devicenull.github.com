@@ -7,7 +7,8 @@ The ultimate goal for all of this is to have a device that turns on when I start
 
 For the moment, I've been working on getting everything set up to detect my wifi and upload all the logs to WiGLE.  This is what I have so far:
 
-<pre class="code"><?php
+{% highlight php %}
+<?php
 	$f = fopen('/root/kismet_log','r');
 	while (true)
 	{
@@ -60,7 +61,7 @@ For the moment, I've been working on getting everything set up to detect my wifi
 	));
 
 	curl_exec($c);
-</pre>
+{% endhighlight %}
 
 I have Kismet set up so all it's logs go into /root/incoming, and the raw output of kismet_server goes into /root/kismet_log.  I'm hoping that I'll get a new 'Detected new managed network' entry when I come into range of my wifi, which would trigger this process.  I haven't yet been able to confirm this.  The ideal way to do this would be some sort of Kismet event that occurs whenever an access point is detected, but there doesn't appear to be any way to do this without writing a plugin.
 

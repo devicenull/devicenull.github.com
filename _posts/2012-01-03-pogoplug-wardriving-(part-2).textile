@@ -5,24 +5,24 @@ title: Pogoplug Wardriving (Part 2)
 
 So, I've discovered an issue with my GPSD + NTPD setup: It refuses to set the time on start, because the time is too far off (now doesn't that just suck!).  So, I needed to find a way to set this automatically, using the data from GPSD.  This really only needs to be run once, then I can trust NTPD to keep things up to date.  I found "this script":http://charlescurley.com/blog/articles/gpsdate_get_the_date_from_a_gps_receiver/index.html , however setting it up requires installing HALF OF CPAN.  So, I came up with a really awful hack to do this instead:
 
-<pre class="code">
-    GPSDATE=`gpspipe -w | head -10 | grep TPV | sed -r 's/.*"time":"([^"]*)".*/\1/' | head -1`
-    echo $GPSDATE
-    date -s "$GPSDATE"
-</pre>
+{% highlight bash %}
+GPSDATE=`gpspipe -w | head -10 | grep TPV | sed -r 's/.*"time":"([^"]*)".*/\1/' | head -1`
+echo $GPSDATE
+date -s "$GPSDATE"
+{% endhighlight %}
 
 So, my rc.local looks like this now:
 
-<pre class="code">
-    date -s '01/01/2011 00:01'
-    sleep 1
-    /usr/sbin/gpsd /dev/ttyUSB0 -n
-    sleep 6
-    GPSDATE=`gpspipe -w | head -10 | grep TPV | sed -r 's/.*"time":"([^"]*)".*/\1/' | head -1`
-    echo $GPSDATE
-    date -s "$GPSDATE"
-    sleep 3
-    /usr/bin/ntpd
-</pre>
+{% highlight bash %}
+date -s '01/01/2011 00:01'
+sleep 1
+/usr/sbin/gpsd /dev/ttyUSB0 -n
+sleep 6
+GPSDATE=`gpspipe -w | head -10 | grep TPV | sed -r 's/.*"time":"([^"]*)".*/\1/' | head -1`
+echo $GPSDATE
+date -s "$GPSDATE"
+sleep 3
+/usr/bin/ntpd
+{% endhighlight %}
 
 It seems that you need the time to be somewhat close before you can get accurate results from GPSD.  Being in the same decade seems to help.

@@ -11,6 +11,8 @@ resolv.conf has an 'options' line that you can use to do a few things.  I lowere
 
 The syntax for this is:
 
-<pre class="code">
-	options timeout:1 rotate attempts:1
+<pre class="highlight">
+
+options timeout:1 rotate attempts:1
+
 </pre>

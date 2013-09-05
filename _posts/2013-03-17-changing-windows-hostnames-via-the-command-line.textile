@@ -5,7 +5,8 @@ title: Changing Windows hostnames via the command line
 
 We have various automation scripts that need to change machine hostnames on Windows (sometimes via SSH, sometimes via batch files).  This is actually pretty simple to do, though it took awhile to track down the correct command:
 
-<pre class="code">
+{% highlight bash %}
     wmic computersystem where name="$COMPUTERNAME" call rename name="newname"
     shutdown /r /d p:2:2
-</pre>
+{% endhighlight %}
+

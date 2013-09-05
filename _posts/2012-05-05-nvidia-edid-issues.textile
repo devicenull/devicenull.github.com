@@ -7,32 +7,38 @@ For some reason, my Viewsonic LCD TV has an invalid EDID block.  This normally d
 
 In the XOrg error logs, I was seeing this error:
 
-<pre class="code">
-	The EDID read for display device DFP-1 is invalid: the checksum for EDID version 1 is invalid.
+<pre class="highlight">
+
+The EDID read for display device DFP-1 is invalid: the checksum for EDID version 1 is invalid.
+
 </pre>
 
 After some digging, I found an option to turn off the EDID checksum detection, add this to the "Section Device" block in xorg.conf:
 
-<pre class="code">
-	Option "IgnoreEDIDChecksum" "DFP"
+<pre class="highlight">
+
+Option "IgnoreEDIDChecksum" "DFP"
+
 </pre>
 
 Where the DFP is the name of the monitor with the invalid checksum.  This should be visible in the XOrg logs.
 
 Now I get some errors like this:
 
-<pre class="code">
-	[   290.050] (WW) NVIDIA(GPU-0): Ignoring EDID checksum for display DFP-1. Note that an EDID
-	[   290.050] (WW) NVIDIA(GPU-0):     with a bad checksum could indicate a corrupt EDID. A
-	[   290.050] (WW) NVIDIA(GPU-0):     corrupt EDID may have mode timings beyond the capabilities
-	[   290.050] (WW) NVIDIA(GPU-0):     of your display, and could damage your hardware. Please
-	[   290.050] (WW) NVIDIA(GPU-0):     use with care.
+<pre class="highlight">
 
-	[   290.057] (WW) NVIDIA(0): The EDID for ViewSonic N3235w (DFP-1) contradicts itself: mode
-	[   290.057] (WW) NVIDIA(0):     "720x480" is specified in the EDID; however, the EDID's
-	[   290.057] (WW) NVIDIA(0):     valid HorizSync range (30.000-82.000 kHz) would exclude
-	[   290.057] (WW) NVIDIA(0):     this mode's HorizSync (15.7 kHz); ignoring HorizSync check
-	[   290.057] (WW) NVIDIA(0):     for mode "720x480".
+[   290.050] (WW) NVIDIA(GPU-0): Ignoring EDID checksum for display DFP-1. Note that an EDID
+[   290.050] (WW) NVIDIA(GPU-0):     with a bad checksum could indicate a corrupt EDID. A
+[   290.050] (WW) NVIDIA(GPU-0):     corrupt EDID may have mode timings beyond the capabilities
+[   290.050] (WW) NVIDIA(GPU-0):     of your display, and could damage your hardware. Please
+[   290.050] (WW) NVIDIA(GPU-0):     use with care.
+
+[   290.057] (WW) NVIDIA(0): The EDID for ViewSonic N3235w (DFP-1) contradicts itself: mode
+[   290.057] (WW) NVIDIA(0):     "720x480" is specified in the EDID; however, the EDID's
+[   290.057] (WW) NVIDIA(0):     valid HorizSync range (30.000-82.000 kHz) would exclude
+[   290.057] (WW) NVIDIA(0):     this mode's HorizSync (15.7 kHz); ignoring HorizSync check
+[   290.057] (WW) NVIDIA(0):     for mode "720x480".
+
 </pre>
 
 However, it actually determines the correct resolution to use, and doesn't just assume I want 640x480.

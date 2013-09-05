@@ -7,32 +7,32 @@ So, in my quest to be able to network boot with a static IP, one issue that come
 
 So, to boot recent Debian-based operating systems and assign it an IP from iPXE, you need to append the following to the kernel command line:
 
-<pre class="code">
-	ip=${net0/ip}::${net0/gateway}:${net0/netmask}:${net0/hostname}:eth0
+<pre class="highlight">
+ip=${net0/ip}::${net0/gateway}:${net0/netmask}:${net0/hostname}:eth0
 </pre>
 
 For CentOS, you would use the following:
 
-<pre class="code">
-	ip=${net0/ip} netmask=${net0/netmask} gateway=${net0/gateway} hostname=${net0/hostname}
+<pre class="highlight">
+ip=${net0/ip} netmask=${net0/netmask} gateway=${net0/gateway} hostname=${net0/hostname}
 </pre>
 
 For Clonezilla (which is Debian based, but doesn't use the standard Debian way):
 
-<pre class="code">
-	ip=eth0:${net0/ip}:${net0/netmask}:${net0/gateway}:8.8.8.8
+<pre class="highlight">
+ip=eth0:${net0/ip}:${net0/netmask}:${net0/gateway}:8.8.8.8
 </pre>
 
 If you have some software that indicates you should use 'IPAPPEND 1' from SysLinux, this really means you need to add this to the command line:
 
-<pre class="code">
-	ip=${net0/ip}::${net0/gateway}:${net0/netmask}
+<pre class="highlight">
+ip=${net0/ip}::${net0/gateway}:${net0/netmask}
 </pre>
 
 Similarly, if you have something that says to use 'IPAPPEND 2', this is what you need:
 
-<pre class="code">
-	BOOTIF=01-${net0/mac:hexhyp}
+<pre class="highlight">
+BOOTIF=01-${net0/mac:hexhyp}
 </pre>
 
 For that last one, I really don't have any idea what the "01-" in front is for, but after examining the Anaconda (CentOS installer) source, *something* seems to be required there, and the installer happily ignores whatever you put.

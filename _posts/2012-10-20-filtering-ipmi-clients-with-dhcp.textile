@@ -5,26 +5,27 @@ title: Filtering IPMI clients with DHCP
 
 If you ever need to run a DHCP server and assign different IP addresses to IPMI clients and actual OS clients, you can use the following:
 
-<pre class="code">
-	class "ipmi" {
-		match if substring (option vendor-class-identifier,0,5) = "udhcp";
-	}
-	class "normal" {
-		match if substring (option vendor-class-identifier,0,5) != "udhcp";
-	}
+<pre class="highlight">
 
+class "ipmi" {
+	match if substring (option vendor-class-identifier,0,5) = "udhcp";
+}
+class "normal" {
+	match if substring (option vendor-class-identifier,0,5) != "udhcp";
+}
 	subnet 10.0.0.0 netmask 255.255.255.248 {
-		pool {
-			allow members of "normal";
-			deny members of "ipmi";
-			range 10.0.0.100 10.0.0.105;
-		}
-		pool {
-			deny members of "ipmi";
-			allow members of "normal";
-			range 10.0.0.106 10.0.0.110;
-		}
+	pool {
+		allow members of "normal";
+		deny members of "ipmi";
+		range 10.0.0.100 10.0.0.105;
 	}
+	pool {
+		deny members of "ipmi";
+		allow members of "normal";
+		range 10.0.0.106 10.0.0.110;
+	}
+}
+
 </pre>
 
 This code uses the DHCP vendor class identifier to determine what is and is not an IPMI client (this only works if your OS doesn't use udhcp!).  From there you can pretty easily use it to restrict IP ranges assigned to DHCP or normal clients.

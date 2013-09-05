@@ -17,34 +17,42 @@ After rebuiling your kernel, copy the resulting bzImage to your tftpboot directo
 
 3) Create a fstab.  This one sets up a 100mb tmpfs based /var.  This is important for things like log files and sockets.
 
-<pre class="code">
-	none            /               none    rw      0       0
-	/proc           /proc           proc    rw      0       0
-	/sys            /sys            sysfs   rw      0       0
-	devpts          /dev/pts        devpts  gid=5,mode=620  0       0
-	tmpfs           /var            tmpfs   size=100M,mode=0755     0       0
+<pre class="highlight">
+
+none            /               none    rw      0       0
+/proc           /proc           proc    rw      0       0
+/sys            /sys            sysfs   rw      0       0
+devpts          /dev/pts        devpts  gid=5,mode=620  0       0
+tmpfs           /var            tmpfs   size=100M,mode=0755     0       0
+
 </pre>
 
 4) Once all your packages are setup (install anything else you need before this step, as it will break Yum until you undo it), do the following:
 
-<pre class="code">
-	mv var newvar
-	mkdir var
+<pre class="highlight">
+
+mv var newvar
+mkdir var
+
 </pre>
 
 If you skip this step, you're going to end up with a read-only /var .  This will break many, many things, so we will be creating a ramdisk for this.  In order to do this, we need to modify one of the startup scripts to copy everything from /newvar to /var.  I currently do this in /etc/rc.d/rc.sysinit.  Find the "Mounting local filesystems" action, and add something like this after it:
 
-<pre class="code">
-	action $"Copying contents of var over" cp -R /newvar/* /var/
+<pre class="highlight">
+
+action $"Copying contents of var over" cp -R /newvar/* /var/
+
 </pre>
 
 5) Export your new linux image via NFS.  Add this line to your /etc/exports. Don't make this writable unless you are only going to be booting one machine from it.  If you need writable mounts for multiple machines, take a look at the "nfsroot":http://www.mjmwired.net/kernel/Documentation/filesystems/nfsroot.txt documentation for some tricks.
 
-<pre class="code">
-	label diskless
-		MENU LABEL CentOS 6 x64 diskless
-		kernel bzImage
-		append ip=dhcp rootfstype=nfs root=/dev/nfs ro nfsroot=10.10.10.10:/home/nfsboot/cent6 single
+<pre class="highlight">
+
+label diskless
+	MENU LABEL CentOS 6 x64 diskless
+	kernel bzImage
+	append ip=dhcp rootfstype=nfs root=/dev/nfs ro nfsroot=10.10.10.10:/home/nfsboot/cent6 single
+
 </pre>
 
 At this point, you should be able to boot the image with no issues.  You may see some errors pop up during boot, but these are generally non-fatal.  I haven't had a reason to go and fix them yet, as they don't seem to cause any issues.

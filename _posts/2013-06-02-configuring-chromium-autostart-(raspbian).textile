@@ -5,9 +5,9 @@ title: Configuring Chromium Autostart (Raspbian)
 
 At work I use a Raspberry Pi to display a dashboard.  After a recent power outage, it failed to reboot (the EXT4 partition was hopelessly corrupted).  While rebuilding it, I noticed that I never documented the initial setup anywhere.  These are just my raw notes for it, I'm not going to explain each step
 
-<pre class="code">
-	update-alternatives   --set x-session-manager /usr/bin/openbox-session
-	echo killall chromium >> /etc/xdg/openbox/autostart
-	echo /usr/bin/chromium --start-maximized --kiosk http://www.google.com & >> /etc/xdb/openbox/autostart
-	chmod a+x /etc/xdg/openbox/autostart
-</pre>	
+{% highlight bash %}
+update-alternatives   --set x-session-manager /usr/bin/openbox-session
+echo killall chromium >> /etc/xdg/openbox/autostart
+echo /usr/bin/chromium --start-maximized --kiosk http://www.google.com & >> /etc/xdb/openbox/autostart
+chmod a+x /etc/xdg/openbox/autostart
+{% endhighlight %}

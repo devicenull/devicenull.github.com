@@ -20,21 +20,21 @@ For various reasons relating to how our existing code works, we went with option
 
 So, our overall process looks like this:
 
-<pre class="code">
-	For each direct allocation from ARIN
-		Request a reassignment report
-		Delay until that report has been created.  Convert the report from XLS to CSV, then load the CSV.
-		For each subnet that *we* know about in this direct allocation, check that it exists within the reassignment report
-			If it exists and the information doesn't match, delete the reallocation and mark it to be re-added later
-			If it doesn't exist, mark it to be added later
+<pre class="highlight">
+For each direct allocation from ARIN
+	Request a reassignment report
+	Delay until that report has been created.  Convert the report from XLS to CSV, then load the CSV.
+	For each subnet that *we* know about in this direct allocation, check that it exists within the reassignment report
+		If it exists and the information doesn't match, delete the reallocation and mark it to be re-added later
+		If it doesn't exist, mark it to be added later
 
-		Delete any subnet that exists in the reassignment report, but doesn't exist in our database
+	Delete any subnet that exists in the reassignment report, but doesn't exist in our database
 
-	For each subnet that needs to be added
-		Determine if we need to create a 'recipient customer' or if we should reassign to the customer's ORGID
-			Create an individual customer entry for each subnet if necessary
+For each subnet that needs to be added
+	Determine if we need to create a 'recipient customer' or if we should reassign to the customer's ORGID
+		Create an individual customer entry for each subnet if necessary
 
-		Create the reallocation, linking it either to the customer or ORGID
+	Create the reallocation, linking it either to the customer or ORGID
 </pre>
 
 So, the "hack" here is requesting the reassignment report, then having to download and convert it.  It seems largely unnecessary to have this be an Excel spreadsheet, rather then just a CSV file or raw XML data.

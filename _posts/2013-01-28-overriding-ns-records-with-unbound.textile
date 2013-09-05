@@ -7,8 +7,10 @@ We fairly recently had an outage with some of our DNS servers.  They were still 
 
 Unbound makes this process pretty simple, though it required some reading of the documentation.  This really isn't meant to be a long term solution, it was just enough to keep us running until BGP was fixed (and our DNS TTL was increased):
 
-<pre class="code">
-	local-zone: "example.com" transparent
-	local-data: "ns1.example.com. IN A 10.10.10.10"
-	local-data: "ns2.example.com. IN A 10.10.10.10"
+<pre class="highlight">
+
+local-zone: "example.com" transparent
+local-data: "ns1.example.com. IN A 10.10.10.10"
+local-data: "ns2.example.com. IN A 10.10.10.10"
+
 </pre>

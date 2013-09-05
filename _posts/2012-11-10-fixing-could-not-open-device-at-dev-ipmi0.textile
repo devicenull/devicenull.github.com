@@ -5,21 +5,23 @@ title: Fixing Could not open device at /dev/ipmi0 or /dev/ipmi/0 or /dev/ipmidev
 
 We are using a bunch of new Dell c6620 machines at work.  On Linux we were experencing some errors when trying to use ipmitool/ipmiutil to export IPMI controller information:
 
-<pre class="code">
-	FRU Device Description : Builtin FRU Device (ID 0)
-	Could not open device at /dev/ipmi0 or /dev/ipmi/0 or /dev/ipmidev/0:
-	No such file or directory
-	Device not present (No Response)
+<pre class="highlight">
 
-	Could not open device at /dev/ipmi0 or /dev/ipmi/0 or /dev/ipmidev/0:
-	No such file or directory
-	Get Device ID command failed
+FRU Device Description : Builtin FRU Device (ID 0)
+Could not open device at /dev/ipmi0 or /dev/ipmi/0 or /dev/ipmidev/0:
+No such file or directory
+Device not present (No Response)
+
+Could not open device at /dev/ipmi0 or /dev/ipmi/0 or /dev/ipmidev/0:
+No such file or directory
+Get Device ID command failed
+
 </pre>
 
 It turns out that CentOS 6 doesn't seem to load any of the IPMI kernel modules by default, so this device does not exist.  Just load the modules with the following and everything should work properly:
 
-<pre class="code">
-	modprobe ipmi_msghandler
-	modprobe ipmi_devintf
-	modprobe ipmi_si
-</pre>
+{% highlight bash %}
+modprobe ipmi_msghandler
+modprobe ipmi_devintf
+modprobe ipmi_si
+{% endhighlight %}

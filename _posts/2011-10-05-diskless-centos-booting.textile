@@ -9,43 +9,47 @@ Thankfully, the actual process for setting up a diskless image to boot from isn'
 
 This would be the setup process for a Centos 5 x86_64 OS.  It's pretty similar for Centos 6, I've not attempted it with any other operating system.  I run this on another Centos 5 machine.  I've found that it can be very difficult to bootstrap the OS from another OS.  Attempting to create a Centos 6 image on a Centos 5 machine fails due to some missing libraries and incompatible rpm formats.
 
-<pre class="code">
-	# This would be needed to get the centos-release RPM.
-	# Alternatively, just wget it from one of the mirrors.
-	# pigz will make compressing the image a lot faster (it's parallel gzip)
-	yum install yumdownloader pigz
-	yumdownloader centos-release
-	mkdir /root/diskless
-	# centos-release contains things like the yum configs, and is necessary to bootstrap the system
-	rpm --root=/root/diskless -ivh --nodeps centos-release-5-7.el5.centos.x86_64.rpm
-	yum --installroot=/root/diskless -y install basesystem filesystem bash kernel passwd
+{% highlight bash %}
+# This would be needed to get the centos-release RPM.
+# Alternatively, just wget it from one of the mirrors.
+# pigz will make compressing the image a lot faster (it's parallel gzip)
+yum install yumdownloader pigz
+yumdownloader centos-release
+mkdir /root/diskless
+# centos-release contains things like the yum configs, and is necessary to bootstrap the system
+rpm --root=/root/diskless -ivh --nodeps centos-release-5-7.el5.centos.x86_64.rpm
+yum --installroot=/root/diskless -y install basesystem filesystem bash kernel passwd
+
+cd diskless
+# This next line is important, your system won't boot without it
+ln -s ./sbin/init ./init 
+echo NETWORKING=yes > etc/sysconfig/network
+chroot .
+pwconv
+# Set your root password
+passwd
+exit
 	
-	cd diskless
-	# This next line is important, your system won't boot without it
-	ln -s ./sbin/init ./init 
-	echo NETWORKING=yes > etc/sysconfig/network
-	chroot .
-	pwconv
-	# Set your root password
-	passwd
-	exit
-	
-	find | cpio -ocv | pigz -9 > diskless.cpio.gz
-</pre>
+find | cpio -ocv | pigz -9 > diskless.cpio.gz
+{% endhighlight %}
 
 Now, take your newly created diskless.cpio.gz file, and the vmlinuz file from your chroot's /boot/ directory, and copy them into your TFTP root. Assuming you are using PXELinux to boot this, you would need a menu option like this:
 
-<pre class="code">
-	label diskless
-		# Change the name here to match your actual kernel
-		kernel vmlinuz
-		append initrd=diskless.cpio.gz
+<pre class="highlight">
+
+label diskless
+	# Change the name here to match your actual kernel
+	kernel vmlinuz
+	append initrd=diskless.cpio.gz
+
 </pre>
 
 If you are using SysLinux >= 4.10, you can make this process faster by grabbing the files via HTTP instead.
 
-<pre class="code">
-	label diskless
-		kerenl http://YOURSERVERHERE/vmlinuz
-		append initrd=http://YOURSERVERHERE/diskless.cpio.gz
+<pre class="highlight">
+
+label diskless
+	kerenl http://YOURSERVERHERE/vmlinuz
+	append initrd=http://YOURSERVERHERE/diskless.cpio.gz
+
 </pre>

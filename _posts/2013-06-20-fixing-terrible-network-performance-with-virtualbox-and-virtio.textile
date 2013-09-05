@@ -7,8 +7,7 @@ I was recently rebuilding the development VM I use at work.  Part of this was up
 
 The only command necessary was:
 
-<pre class="code">
-	VBoxManage modifyvm devm2 --hpet on
-</pre>
-
+{% highlight bash %}
+VBoxManage modifyvm devm2 --hpet on
+{% endhighlight %}
 

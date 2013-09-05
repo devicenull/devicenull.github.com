@@ -13,53 +13,59 @@ I was able to confirm this pretty easily with `fstat -p PID`:
 
 On the inital launch of the script, I saw this:
 
-<pre class="code">
-	root     perl5.8.9   2387 root /             2 drwxr-xr-x     512  r
-	root     perl5.8.9   2387   wd /             2 drwxr-xr-x     512  r
-	root     perl5.8.9   2387 text /        4104047 -rwxr-xr-x    7168  r
-	root     perl5.8.9   2387    0 /dev         22 crw-rw-rw-    null  r
-	root     perl5.8.9   2387    1 /dev         22 crw-rw-rw-    null  w
-	root     perl5.8.9   2387    2 /dev         22 crw-rw-rw-    null  w
-	root     perl5.8.9   2387    3 /        34057140 -rw-r--r--   80760  w
+<pre class="highlight">
+
+root     perl5.8.9   2387 root /             2 drwxr-xr-x     512  r
+root     perl5.8.9   2387   wd /             2 drwxr-xr-x     512  r
+root     perl5.8.9   2387 text /        4104047 -rwxr-xr-x    7168  r
+root     perl5.8.9   2387    0 /dev         22 crw-rw-rw-    null  r
+root     perl5.8.9   2387    1 /dev         22 crw-rw-rw-    null  w
+root     perl5.8.9   2387    2 /dev         22 crw-rw-rw-    null  w
+root     perl5.8.9   2387    3 /        34057140 -rw-r--r--   80760  w
+
 </pre>
 
 After a little while, STDERR gets closed, and it changed to this:
 
-<pre class="code">
-	root     perl5.8.9   2387 root /             2 drwxr-xr-x     512  r
-	root     perl5.8.9   2387   wd /             2 drwxr-xr-x     512  r
-	root     perl5.8.9   2387 text /        4104047 -rwxr-xr-x    7168  r
-	root     perl5.8.9   2387    0 /dev         22 crw-rw-rw-    null  r
-	root     perl5.8.9   2387    1 /dev         22 crw-rw-rw-    null  w
-	root     perl5.8.9   2387    3 /        34057140 -rw-r--r--   80965  w
+<pre class="highlight">
+
+root     perl5.8.9   2387 root /             2 drwxr-xr-x     512  r
+root     perl5.8.9   2387   wd /             2 drwxr-xr-x     512  r
+root     perl5.8.9   2387 text /        4104047 -rwxr-xr-x    7168  r
+root     perl5.8.9   2387    0 /dev         22 crw-rw-rw-    null  r
+root     perl5.8.9   2387    1 /dev         22 crw-rw-rw-    null  w
+root     perl5.8.9   2387    3 /        34057140 -rw-r--r--   80965  w
+
 </pre>
 
 (STDERR was the #2 file descriptor there)
 
 Then, MySQL connects and gets assigned the #2 file descriptor:
 
-<pre class="code">
-	root     perl5.8.9   2387 root /             2 drwxr-xr-x     512  r
-	root     perl5.8.9   2387   wd /             2 drwxr-xr-x     512  r
-	root     perl5.8.9   2387 text /        4104047 -rwxr-xr-x    7168  r
-	root     perl5.8.9   2387    0 /dev         22 crw-rw-rw-    null  r
-	root     perl5.8.9   2387    1 /dev         22 crw-rw-rw-    null  w
-	root     perl5.8.9   2387    2* internet stream tcp ffffff0005c38000
-	root     perl5.8.9   2387    3 /        34057140 -rw-r--r--   81695  w
+<pre class="highlight">
+
+root     perl5.8.9   2387 root /             2 drwxr-xr-x     512  r
+root     perl5.8.9   2387   wd /             2 drwxr-xr-x     512  r
+root     perl5.8.9   2387 text /        4104047 -rwxr-xr-x    7168  r
+root     perl5.8.9   2387    0 /dev         22 crw-rw-rw-    null  r
+root     perl5.8.9   2387    1 /dev         22 crw-rw-rw-    null  w
+root     perl5.8.9   2387    2* internet stream tcp ffffff0005c38000
+root     perl5.8.9   2387    3 /        34057140 -rw-r--r--   81695  w
+
 </pre>
 
 So, at this point we have a time bomb.  As long as the rest of the script doesn't produce any output on STDERR everything will continue to work (and it had continued to work for over 8 years).  However, if a misconfiguration of a server starts to produce warnings, everything goes to hell.  The fix was pretty easy, we had some code like this:
 
-<pre class="code">
-	open STDERR, '>/dev/null' or die "Can't write to /dev/null: $!";
-	$status = system ("ps -p $dnsdumppid");
-	close (STDERR);
-</pre>
+{% highlight perl %}
+open STDERR, '>/dev/null' or die "Can't write to /dev/null: $!";
+$status = system ("ps -p $dnsdumppid");
+close (STDERR);
+{% endhighlight %}
 
 that got changed to:
 
-<pre class="code">
-	$status = system ("ps -p $dnsdumppid 2>/devnull");
-</pre>
+{% highlight perl %}
+$status = system ("ps -p $dnsdumppid 2>/devnull");
+{% endhighlight %}
 
 This has to be the weirdest bug I've ever seen.  It also would have been completely prevented if we had been using any sort of configuration management for these machines.  I haven't converted them to Puppet as they've got a pretty complex configuration and I'm not directly responsible for maintaining them.  It's tough for me to explain to people why machine they think they are running have suddenly had Puppet installed (but that's a whole other story).

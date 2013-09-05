@@ -9,17 +9,17 @@ To get started, I installed ArchLinux ARM on it, along with Kismet.  My GPS devi
 
 I picked up the fun trick of using iwpriv to see what options the card supports:
 
-<pre class="code">
-    [root@alarm ~]# iwpriv wlan0
-    wlan0     Available private ioctls :
-          read32           (8BE0) : set   1 int   & get   0
-          write32          (8BE1) : set   1 int   & get   0
-          driver_ext       (8BE2) : set   0       & get   0
-          mp_ioctl         (8BE3) : set   0       & get   0
-          apinfo           (8BE4) : set   1 int   & get   0
-          setpid           (8BE5) : set   1 int   & get   0
-          wps_start        (8BE6) : set   1 int   & get   0
-</pre>
+{% highlight bash %}
+[root@alarm ~]# iwpriv wlan0
+wlan0     Available private ioctls :
+     read32           (8BE0) : set   1 int   & get   0
+     write32          (8BE1) : set   1 int   & get   0
+     driver_ext       (8BE2) : set   0       & get   0
+     mp_ioctl         (8BE3) : set   0       & get   0
+     apinfo           (8BE4) : set   1 int   & get   0
+     setpid           (8BE5) : set   1 int   & get   0
+     wps_start        (8BE6) : set   1 int   & get   0
+{% endhighlight %}
 
 I've also seen various reports that upgrading the firmware to the version in the Debian repository will help fix this.  The firmware that comes with Arch seems to be the latest version already (md5sum's match), so this really doesn't help.
 
@@ -27,31 +27,31 @@ I tried a couple different things for this, and couldn't get it working.  It did
 
 So, the box seems powerful enough to run kismet_server.  I'm seeing a load average of 1-2, with kismet_server using about 10-15% CPU, and 40% memory.  One issue is that the machine doesn't have a hardware clock, so it loses it's time whenever power is removed.  The best way I can see to solve this is GPSD + NTPD.  This shoud ensure the clock always gets set correctly shortly after the machine startup.  The best tutorial I found for this is "here":http://catb.org/gpsd/gpsd.html .  After doing that config, it was just a matter of adding this to rc.local:
 
-<pre class="code">
+{% highlight bash %}
     /usr/sbin/gpsd /dev/ttyUSB0 -n
     /usr/sbin/ntpd
-</pre>
+{% endhighlight %}
 
 and ntpq shows the GPS being used as the clock:
 
-<pre class="code">
-    [root@alarm net]# ntpq -p
-         remote           refid      st t when poll reach   delay   offset  jitter
-    ==============================================================================
-    *SHM(0)          .GPS.            0 l   41   64    3    0.000   19.162   1.161
-     SHM(1)          .GPS1.           0 l    -   64    0    0.000    0.000   0.000
-</pre>
+{% highlight bash %}
+[root@alarm net]# ntpq -p
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+*SHM(0)          .GPS.            0 l   41   64    3    0.000   19.162   1.161
+ SHM(1)          .GPS1.           0 l    -   64    0    0.000    0.000   0.000
+{% endhighlight %}
 
 Now, the kismet setup.  For the most part, the default config is okay.  The only important lines to change are:
 
-<pre class="code">
+{% highlight bash %}
     ncsource=wlan0
     gpstype=gpsd
     gpshost=localhost:2947
     gpsmodelock=false
     gpsreconnect=true
     logtypes=gpsxml,nettxt,netxml
-</pre>
+{% endhighlight %}
 
 The other thing to do here is comment out all the alert lines.  In this case, we don't particulary care about any of them.
 

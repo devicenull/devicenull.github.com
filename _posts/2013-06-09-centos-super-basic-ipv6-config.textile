@@ -5,11 +5,11 @@ title: CentOS super-basic IPv6 config
 
 Setting up basic IPv6 connectivity on CentOS is actually pretty easy, though there's one catch.  Just add the following to your network config file (/etc/sysconfig/network-scripts/ifcfg-ethX) and restart networking (service network restart):
 
-<pre class="code">
-	IPV6INIT=yes
-	IPV6ADDR="MAIN IP V6 ADDRESS/SUBNET PREFIX"
-	IPV6_DEFAULTGW="IPV6 GATEWAY"
-	IPV6_AUTOCONF="no"
-</pre>
+{% highlight bash %}
+IPV6INIT=yes
+IPV6ADDR="MAIN IP V6 ADDRESS/SUBNET PREFIX"
+IPV6_DEFAULTGW="IPV6 GATEWAY"
+IPV6_AUTOCONF="no"
+{% endhighlight %}
 
 The catch here is IPV6_AUTOCONF.  If you're running a server, you probably don't want this to be enabled (the default).  Doing so means your server has two IPv6 addresses, and it randomly chooses between them when creating new outbound connections.  This can cause issues such as SPF or firewall checks failing.

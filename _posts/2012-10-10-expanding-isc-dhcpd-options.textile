@@ -7,13 +7,15 @@ I was recently trying to do some tricky things using a DHCP server and the 'subs
 
 This is actually pretty straightforward, just add the following to your config file, and use 'myagent.subscriber-id' to retrieve the value for it.  You shouldn't have to do any decoding, it's handled automatically.
 
-<pre class="code">
-	option space myagent;
-	option myagent.circuit-id code 1 = text;
-	option myagent.remote-id code 2 = text;
-	option myagent.agent-id code 3 = text;
-	option myagent.DOCSIS-device-class code 4 = unsigned integer 32;
-	option myagent.link-selection code 5 = ip-address;
-	option myagent.subscriber-id code 6 = text;
-	option myagent-encapsulation code 82 = encapsulate myagent;
+<pre class="highlight">
+
+option space myagent;
+option myagent.circuit-id code 1 = text;
+option myagent.remote-id code 2 = text;
+option myagent.agent-id code 3 = text;
+option myagent.DOCSIS-device-class code 4 = unsigned integer 32;
+option myagent.link-selection code 5 = ip-address;
+option myagent.subscriber-id code 6 = text;
+option myagent-encapsulation code 82 = encapsulate myagent;
+
 </pre>
