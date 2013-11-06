@@ -1,0 +1,10 @@
+---
+layout: post
+title: Writing an abuse response system, some tips
+---
+
+Recently, we've been sending out large amounts of abuse emails in response to various DDOS attacks.  I've had to interact with some terrible abuse systems, and I've got some advice if you're writing a system like this:
+
+* Should you decide to reply to the email, make sure you retain information from the original email.  It is *not* helpful when you send back a request for more information, but throw away the subject and body of the initial complaint.  Don't assume that people are sending you only one email at a time, and carefully keeping track of who they send what (for example, we send Amazon easily 15 complaints a day, and they never bother to tell us which complaint they want more information on).
+* Make sure your RIR WHOIS records are correct.  I've lost count of the number of bounces that we get. I know it adds some extra work for you to sift through all the garbage, but you need accurate contact info.
+* Your abuse emails should not be going through an anti-spam system.  How exactly can you get spam reports if your spam reporting email is spam filtered?  Also, abuse emails tend to look nothing like normal emails (tcpdump outputs, lots of IPs) which confuses some anti-spam systems.
