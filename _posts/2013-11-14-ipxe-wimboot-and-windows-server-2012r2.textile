@@ -1,0 +1,23 @@
+---
+layout: post
+title: iPXE, wimboot and Windows Server 2012R2
+---
+
+Recently, I've been trying to get iPXE and wimboot to boot the Windows Server 2012R2 installer.  This uses WinPE 5.0, which is still very new at this point.  In this version of WinPE, the compression scheme used for bootmgr has changed, and iPXE no longer recognizes it.  This leads to errors such as 'no embedded bootmgr.exe found', and ultimately 'FATAL: no bootmgr.exe'.
+
+The fix for this is pretty easy, you want to use bootmgr.exe directly, instead of relying on wimboot to extract it from bootmgr.  You can find bootmgr.exe inside the 'boot.wim' file you get from WinPE.  Mount this (using the Windows ADK) and bootmgr.exe can be found in mount\Windows\Boot\PXE\bootmgr.exe.  Make sure you update your initrd line to contain bootmgr.exe instead of just bootmgr, so you'd end up with:
+
+<pre class="highlight">
+
+kernel wimboot
+initrd bootmgr.exe              bootmgr.exe
+initrd boot/bcd                 BCD
+initrd boot/fonts/wgl4_boot.ttf wgl4_boot.ttf
+initrd boot/fonts/chs_boot.ttf  chs_boot.ttf
+initrd boot/fonts/cht_boot.ttf  cht_boot.ttf
+initrd boot/fonts/jpn_boot.ttf  jpn_boot.ttf
+initrd boot/fonts/kor_boot.ttf  kor_boot.ttf
+initrd boot/boot.sdi            boot.sdi
+initrd sources/boot.wim         boot.wim
+
+</pre>
