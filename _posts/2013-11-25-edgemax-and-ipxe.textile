@@ -1,0 +1,21 @@
+---
+layout: post
+title: Edgemax and iPXE
+---
+
+Recently, I needed to reinstall one of my machines at home.  My choices were find a USB drive and setup the installer or finally get around to setting up network installs.  At this point I can setup network installs in my sleep, so that was the better choice.  I use an Edgemax router at home, which is based on Vyatta.  Figuring out the configuration necessary to do this took longer then anything else.
+
+For reference:
+
+<pre class="highlight">
+
+set service dhcp-server global-parameters "if exists user-class and option user-class = &quot;iPXE&quot; {"
+set service dhcp-server global-parameters "filename &quot;/iPXE.conf&quot;;"
+set service dhcp-server global-parameters " } else { "
+set service dhcp-server global-parameters "filename &quot;ipxe.pxe&quot;;"
+set service dhcp-server global-parameters "}"
+set service dhcp-server global-paramters "next-server TFTPSERVERIP;"
+
+</pre>
+
+I'm only using TFTP here, but it's just as easy to use HTTP.
