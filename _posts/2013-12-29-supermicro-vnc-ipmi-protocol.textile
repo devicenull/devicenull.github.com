@@ -1,0 +1,41 @@
+---
+layout: post
+title: Supermicro VNC IPMI Protocol
+---
+
+Lately, I've been trying to get noVNC working with Supermicro IPMI controllers.  These use a Java application for access, which is pretty terrible.  Interestingly, they use a modified VNC protocol.  They advertise server version 003.008, and the 'Tight' security type (number 16).  It's definitely not the Tight security type though.
+
+After the initial protocol and security type negotiations, the server sends:
+
+<pre class="highlight">
+
+0000000E  af f9 5f be 68 1d 02 00  d4 a5 00 00 84 7c fb be .._.h... .....|..
+0000001E  00 b0 4a 40 44 2c 01 00                          ..J@D,.. 
+
+</pre>
+
+Examining multiple packet captures, it seems the majority of this is constant, and doesn't change.  I've only seen three bytes change (masked with ?):
+
+<pre class="highlight">
+
+af f9 ?f be ?8 1? 02 00 d4 a5 00 00 84 7c fb be 00 b0 4a 40 44 2c 01 00
+
+</pre>
+
+After that, the server responds with the passwords.  These come from the JNLP file, and are oddly duplicated.  In the JNLP file you'll see a couple argument blocks with 16 random letters.  These are the passwords (the exact place varies wildly based on firmware version).
+
+These passwords are sent like this:
+
+<pre class="highlight">
+
+0000000D  41 41 41 41 41 41 41 41  41 41 41 41 41 41 41 41 AAAAAAAA AAAAAAAA
+0000001D  00 6f 3a 34 14 f3 19 07  42 42 42 42 42 42 42 42 .o:4.... BBBBBBBB
+0000002D  42 42 42 42 42 42 42 42  00 00 00 00 00 00 00 00 BBBBBBBB ........
+
+</pre>
+
+Where AA..AA is the first password, and BB..BB is the second. (Again, with real controllers these passwords seem to be the same). The part in the middle is unknown, and changes slightly between each packet.  I haven't isolated what it is yet, but it seems you can just reuse the same value.
+
+From there, you follow the "usual VNC authentication process":http://sourceforge.net/p/tigervnc/code/HEAD/tree/rfbproto/rfbproto.rst . One note, is that the server sends the extra Tight Security Type header.  This, plus the authentication method, makes me fairly certain the server is based on TightVNC.  I'm uncertain if they've paid for a business license here, or if they're just violating the GPL.  Supermicro is "pretty terrible":http://www.softwarefreedom.org/news/2008/jul/23/busybox-supermicro/ about the GPL, so I'm not surprised.
+
+So, that's enough to get through the initial handshake, but it's not enough to actually get video.  It seems they've modified the protocol further, adding some undocumented message types (52, 86, and 120 are the ones I've seen so far), and modifiying existing message types to do strange things.  I was hoping at this point it would just be standard VNC, but that doesn't seem to be the case.
