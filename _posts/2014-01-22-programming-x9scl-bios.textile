@@ -9,7 +9,7 @@ My first attempt at this involves a mysterious header on the board labeled 'SPI 
 
 There appears to be no standard for SPI headers, so I had to figure it all out with a multimeter.  I've documented in below, the picture assumes you're holding the motherboard with the PCI slots on top, and the BIOS chip and SPI header on the bottom.
 
-![X9SCL Bios Pinout]({{ site.url }}/files/X9SCL_bios_pinout.png)
+[<img src="/files/X9SCL_bios_pinout.png">](/files/X9SCL_bios_pinout.png)
 
 There is also a jumper (J29) next to the BIOS flash chip.  I believe this disconnects VCC from the rest of the board.  This allows programming without having to desolder the chip.  I didn't really see any difference with this open or closed, so it may not be that useful.  I should note that the board won't actually boot if this is removed, it will spin the fan up for half a second, then shut it off, and repeat indefinitely.
 
