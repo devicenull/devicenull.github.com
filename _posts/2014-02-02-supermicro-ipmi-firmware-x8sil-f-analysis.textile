@@ -1,0 +1,188 @@
+---
+layout: post
+title: SuperMicro IPMI Firmware (X8SIL-F) Analysis
+---
+
+I've been looking into modifying the SuperMicro IPMI firmware.  It's full of bugs and lacks some features that would make it useful to manage many servers at once.  Step one was figuring out what the existing firmware looks like.  For this, I'm using the X8SIL-F board (This was the cheapest board w/IPMI controller that I could find).
+
+So, I downloaded the firmware image (SMT_313.bin inside SMT_313.zip) and ran it through binwalk:
+
+<pre class="highlight">
+$ binwalk SMT_313.bin
+
+DECIMAL         HEX             DESCRIPTION
+-------------------------------------------------------------------------------------------------------------------
+59700           0xE934          Copyright string: " (c) Winbond Limited 2001 - 2006. All rights reserved.6. All rights reserved."
+60835           0xEDA3          Copyright string: " 1995-1998 Mark Adler  termination"
+1572864         0x180000        CramFS filesystem, little endian size 8118272 version #2 sorted_dirs CRC 0x9236f037, edition 0, 5000 blocks, 1012 files
+9961472         0x980000        Zip archive data, at least v2.0 to extract, compressed size: 1124880,  uncompressed size: 2331112, name: "kernel.bin"
+11086482        0xA92A92        End of Zip archive
+12058624        0xB80000        CramFS filesystem, little endian size 1970176 version #2 sorted_dirs CRC 0xc7723bfb, edition 0, 948 blocks, 210 files
+</pre>
+
+These are some interesting results, we have two CramFS filesystems as well as a kernel image.  There's also a whole bunch of unknown data at the beginning of the image.  Using the binwalk data, I looked through the entire image with hexdump.  It turns out there's a custom bootloader at the beginning of the image, as well as a whole bunch of empty space.
+
+This is what I came up with:
+<pre class="highlight">
+0x0        0xfa40: Looks like a winbound bootloader "W90P710 Command Shell"
+0xfa40     0x180000: empty
+0x180000   0x93dea0: cramfs filesystem (root filesystem)
+0x93dea0   0x93e000: empty
+
+0x93e000   ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+
+0x93e010   0x93ffc0: empty
+
+0093ffc0   ff ff ff ff ff ff ff ff  ff ff ff ff 02 00 00 00  |................|
+0093ffd0   00 00 18 40 00 e0 7b 00  00 00 d0 00 00 00 d0 00  |...@..{.........|
+0093ffe0   31 73 74 46 53 00 00 00  00 00 00 00 00 00 00 00  |1stFS...........|
+0093fff0   0a 2c c1 ae 9f ff ff a0  08 00 00 00 c7 80 96 27  |.,.............'|
+00940000   ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+
+0x940010   0x980000: empty
+0x980000   0xa92ac0: kernel image
+0xa92ac0   0xa9ffc0: empty
+
+0xa9ffc0   ff ff ff ff ff ff ff ff  ff ff ff ff 03 00 00 00  |................|
+0xa9ffd0   00 00 98 40 a8 2a 11 00  00 80 00 00 00 80 00 00  |...@.*..........|
+0xa9ffe0   6b 65 72 6e 65 6c 00 00  00 00 00 00 00 00 00 00  |kernel..........|
+0xa9fff0   23 f5 cc 9c 9f ff ff a0  17 00 00 00 aa 0e 16 13  |#...............|
+0xaa0000   ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+
+0xaa0010   0xb80000: empty
+0xb80000   0xd604d0: cramfs filesystem (web ui)
+0xd604d0   0xd61000: empty
+
+0xd61000   ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+
+0xd61010   0xd6ffb0: empty
+
+0xd6ffb0   ff ff ff 41 54 45 4e 73  5f 46 57 03 13 71 8c 61  |...ATENs_FW..q.a|
+0xd6ffc0   29 9f 17 ff ff ff ff ff  ff ff ff ff 04 00 00 00  |)...............|
+0xd6ffd0   00 00 b8 40 00 10 1e 00  00 00 d0 00 00 00 d0 00  |...@............|
+0xd6ffe0   32 6e 64 46 53 00 00 00  00 00 00 00 00 00 00 00  |2ndFS...........|
+0xd6fff0   ac 1c 9c 9a 9f ff ff a0  08 00 00 00 22 65 89 3b  |............"e.;|
+0xd70000   ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+
+0xd70010   0x1000000: empty
+</pre>
+
+It seems that the root linux image (aka 1stFS) is entirely separate from the web UI fiels (aka 2ndFS).  I suspect that this firmware is based on the ATEN SDK, and that it was meant to be easy to customize the web UI (so that different manufacturers can use the same code, but have different looks).  This means it should be quite easy to replace the entire frontend.  However, the kinds of issues that I'm aiming to fix run far deeper then that.
+
+Before looking at what's actually in the firmware, I decided to check out the "SDK" SuperMicro gave me.  I'd been harassing them to give me an updated package of GPL code for their firmware, and they finally came through a couple weeks ago.  This file is named <a href="ftp://ftp.supermicro.com/GPL/SMT/SDK_SMT_X9_317.tar.gz">SDK_SMT_X9_317.tar.gz</a>, and can be found on ftp.supermicro.com (though, that link seems pretty constant).
+
+They provide a Makefile, which compiles most of whats there.  That's not entirely useful to us, but some of the other files they include are.
+
+images/bootloader_pcb_rev_b.bin this looks suspiciously like the bootloader from our image.  Let's extract it and find out!
+
+<pre class="highlight">
+$ dd if=SMT_313.bin of=bootloader bs=1 count=64040
+64040+0 records in
+64040+0 records out
+64040 bytes (64 kB) copied, 0.0795194 s, 805 kB/s
+$ md5sum bootloader
+166162c6c9f21d7a710dfd62a3452684  bootloader
+$ md5sum images/bootloader_pcb_rev_b.bin
+166162c6c9f21d7a710dfd62a3452684  images/bootloader_pcb_rev_b.bin
+</pre>
+
+Awesome, this bootloader appears to be some pretty standard software, so we shouldn't have to worry about any customizations that may have been made to it.  A quick look inside the bootloader (with `strings`) shows some interesting things:
+
+<pre class="highlight">
+WPCM450 Boot Loader [ Version:1.0.14 ]
+W90P710 Command Shell v1.0 Rebuilt on Mar 23 2012 at 17:48:54
+usage: D -[w,h,b,s] <taddr>
+       -w, -W   Word alignment
+       -h, -H   Half-word alignment
+       -b, -B   Byte alignment
+       -s, -S   Swap target
+       <taddr>  Target memory address.
+Displaying memory at 0x%X
+usage: E -[w,h,b,s] <taddr>
+        -a              Active image
+        -c              Image needs to be copy to RAM
+        -x              Executable image
+        -f              File system image
+        -z              Compressed image
+        -nofooter       No footer be written
+Usage: DEL [ImageNo.] [b{blockNo.}] [-all]
+       [ImageNo.]       Delete the image
+       [b{blockNo.}]    Delete the block
+       -all             Delete all blocks
+ -net_mac  [0,1]      Set active MAC  number
+ -mac[0,1] [addr]     Set MAC  Address
+ -ip[0,1]  [ip addr]  IP Address
+ -dhcp     [1,0]      Enable/Disable Dhcp client
+ -baudrate [baud rate setting] Set the default baud rate
+ -sn       [serial number]  Set the serial number
+Program the flash by TFTP. FT -? for help
+Program the flash by Xmodem. FX -? for help
+</pre>
+
+So, it looks like there's a serial console here that we can use to reprogram the flash.  That's pretty handy, though I currently have no idea how to access the serial console (there's no obvious headers on the board).  It also looks like we can just grab the images via TFTP, which is nice.  I'd rather not try to get Xmodem working.
+
+Poking around the image some more, I came across MKIMG_Tool/Host/HERMON/Board/SuperMicro_X7SB3/mkbin.inf, which further confirmed the flash layout I had manually discovered:
+<pre class="highlight">
+bootloader_pcb_rev_b.bin = 0
+out_rootfs_img.bin = 0x180000
+out_kernel.bin = 0x980000
+out_webfs_img.bin = 0xB80000
+</pre>
+
+There's also a binary in here (mkbin), though it segfaults whenever I try to run it.  Looking at `strings` output again, I suspect we can replicate all the functionality with dd and not a whole lot of effort.
+
+Though it doesn't help us, you can also find the default ntp.conf file (NTP/etc/ntp.conf).  This lacks the correct configuration, which is why we see IPMI controllers taking part in NTP reflection attacks.
+
+While it's interesting they've implemented a new bootloader (rather then using something like U-Boot), that's not exactly helpful to us. The bootloader isn't part of any of the bugs that need fixing, so let's move on the root filesystem.  We need to pull it from the image and extract it:
+
+<pre class="highlight">
+$ dd if=SMT_313.bin of=cramfs1 skip=1572864 count=$((9961472-1572864)) bs=1
+8388608+0 records in
+8388608+0 records out
+8388608 bytes (8.4 MB) copied, 9.49599 s, 883 kB/s
+
+$ file cramfs1
+cramfs1: Linux Compressed ROM File System data, little endian size 8118272 version #2 sorted_dirs CRC 0x9236f037, edition 0, 5000 blocks, 1012 files
+
+$ mkdir mount cramfs1_extract
+
+$ sudo mount -o loop ./cramfs1 mount; cd mount
+mount: warning: mount seems to be mounted read-only.
+
+$ sudo tar -cf - . | sudo tar -C ../cramfs1_extract/ -xpf -
+</pre>
+
+This copies everything to cramfs1_extract (you could look through everything in mount, but you can't make any changes that way).  Looking around, there are various bits of standard linux software:
+
+<ul>
+<li>BusyBox v1.12.0 (2014-01-02 18:15:33 PST) - This version of BusyBox is from 2008</li>
+<li>lighttpd/1.4.23 (Jan  2 2014 18:16:36) - Lighttpd from 2009</li>
+<li>Dropbear 2013.60 - It's interesting that this is so much newer</li>
+<li>Openwsman 2.1.0 - 2008 again</li>
+<li>ntpd 4.2.4p4@1.1520 Fri Jan  3 02:24:48 UTC 2014 (55) - From 2007, not 2014!</li>
+<li>sfcbd 1.3.2 - 2008</li>
+</ul>
+
+There's also a whole bunch of custom software:
+
+<ul>
+<li>/bin/ivkmserver - Remote KVM, most likely</li>
+<li>/bin/uiso - This is probably the "virtual media" daemon</li>
+<li>/bin/LanNotifier</li>
+<li>Various kernel modules: usb_hid, vcddev
+</ul>
+
+And, we can see it mount the web UI files:
+<pre class="highlight">
+mount -t cramfs /dev/mtdblock4 /web
+</pre>
+
+Only one user has a password by default (though, I'm not sure what this auth is used for other then ssh):
+<pre class="highlight">
+root:$1$9X8dqhm3$zuZISagav2MF3yWHBrWQ8/:14396:0:99999:7:::
+</pre>
+
+Google shows that this is apparently the hash for 'atenuser'.  Not surprising.
+
+
+At this point, we know we have a standard ARM Linux system, and we know the basic structure of the flash image.  I'm still waiting on my board to be delivered, so I can't currently test modifying the image.
