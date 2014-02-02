@@ -122,12 +122,10 @@ Program the flash by Xmodem. FX -? for help
 So, it looks like there's a serial console here that we can use to reprogram the flash.  That's pretty handy, though I currently have no idea how to access the serial console (there's no obvious headers on the board).  It also looks like we can just grab the images via TFTP, which is nice.  I'd rather not try to get Xmodem working.
 
 Poking around the image some more, I came across MKIMG_Tool/Host/HERMON/Board/SuperMicro_X7SB3/mkbin.inf, which further confirmed the flash layout I had manually discovered:
-<pre class="highlight">
-bootloader_pcb_rev_b.bin = 0
+<pre class="highlight">bootloader_pcb_rev_b.bin = 0
 out_rootfs_img.bin = 0x180000
 out_kernel.bin = 0x980000
-out_webfs_img.bin = 0xB80000
-</pre>
+out_webfs_img.bin = 0xB80000</pre>
 
 There's also a binary in here (mkbin), though it segfaults whenever I try to run it.  Looking at `strings` output again, I suspect we can replicate all the functionality with dd and not a whole lot of effort.
 
@@ -173,14 +171,10 @@ There's also a whole bunch of custom software:
 </ul>
 
 And, we can see it mount the web UI files:
-<pre class="highlight">
-mount -t cramfs /dev/mtdblock4 /web
-</pre>
+<pre class="highlight">mount -t cramfs /dev/mtdblock4 /web</pre>
 
 Only one user has a password by default (though, I'm not sure what this auth is used for other then ssh):
-<pre class="highlight">
-root:$1$9X8dqhm3$zuZISagav2MF3yWHBrWQ8/:14396:0:99999:7:::
-</pre>
+<pre class="highlight">root:$1$9X8dqhm3$zuZISagav2MF3yWHBrWQ8/:14396:0:99999:7:::</pre>
 
 Google shows that this is apparently the hash for 'atenuser'.  Not surprising.
 
