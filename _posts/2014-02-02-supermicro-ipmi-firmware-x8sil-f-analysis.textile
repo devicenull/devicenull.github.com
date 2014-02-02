@@ -23,49 +23,37 @@ DECIMAL         HEX             DESCRIPTION
 These are some interesting results, we have two CramFS filesystems as well as a kernel image.  There's also a whole bunch of unknown data at the beginning of the image.  Using the binwalk data, I looked through the entire image with hexdump.  It turns out there's a custom bootloader at the beginning of the image, as well as a whole bunch of empty space.
 
 This is what I came up with:
-<pre class="highlight">
-0x0        0xfa40: Looks like a winbound bootloader "W90P710 Command Shell"
+<pre class="highlight">0x0        0xfa40: Looks like a winbound bootloader "W90P710 Command Shell"
 0xfa40     0x180000: empty
 0x180000   0x93dea0: cramfs filesystem (root filesystem)
 0x93dea0   0x93e000: empty
-
 0x93e000   ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
-
 0x93e010   0x93ffc0: empty
-
 0093ffc0   ff ff ff ff ff ff ff ff  ff ff ff ff 02 00 00 00  |................|
 0093ffd0   00 00 18 40 00 e0 7b 00  00 00 d0 00 00 00 d0 00  |...@..{.........|
 0093ffe0   31 73 74 46 53 00 00 00  00 00 00 00 00 00 00 00  |1stFS...........|
 0093fff0   0a 2c c1 ae 9f ff ff a0  08 00 00 00 c7 80 96 27  |.,.............'|
 00940000   ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
-
 0x940010   0x980000: empty
 0x980000   0xa92ac0: kernel image
 0xa92ac0   0xa9ffc0: empty
-
 0xa9ffc0   ff ff ff ff ff ff ff ff  ff ff ff ff 03 00 00 00  |................|
 0xa9ffd0   00 00 98 40 a8 2a 11 00  00 80 00 00 00 80 00 00  |...@.*..........|
 0xa9ffe0   6b 65 72 6e 65 6c 00 00  00 00 00 00 00 00 00 00  |kernel..........|
 0xa9fff0   23 f5 cc 9c 9f ff ff a0  17 00 00 00 aa 0e 16 13  |#...............|
 0xaa0000   ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
-
 0xaa0010   0xb80000: empty
 0xb80000   0xd604d0: cramfs filesystem (web ui)
 0xd604d0   0xd61000: empty
-
 0xd61000   ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
-
 0xd61010   0xd6ffb0: empty
-
 0xd6ffb0   ff ff ff 41 54 45 4e 73  5f 46 57 03 13 71 8c 61  |...ATENs_FW..q.a|
 0xd6ffc0   29 9f 17 ff ff ff ff ff  ff ff ff ff 04 00 00 00  |)...............|
 0xd6ffd0   00 00 b8 40 00 10 1e 00  00 00 d0 00 00 00 d0 00  |...@............|
 0xd6ffe0   32 6e 64 46 53 00 00 00  00 00 00 00 00 00 00 00  |2ndFS...........|
 0xd6fff0   ac 1c 9c 9a 9f ff ff a0  08 00 00 00 22 65 89 3b  |............"e.;|
 0xd70000   ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
-
-0xd70010   0x1000000: empty
-</pre>
+0xd70010   0x1000000: empty</pre>
 
 It seems that the root linux image (aka 1stFS) is entirely separate from the web UI fiels (aka 2ndFS).  I suspect that this firmware is based on the ATEN SDK, and that it was meant to be easy to customize the web UI (so that different manufacturers can use the same code, but have different looks).  This means it should be quite easy to replace the entire frontend.  However, the kinds of issues that I'm aiming to fix run far deeper then that.
 
