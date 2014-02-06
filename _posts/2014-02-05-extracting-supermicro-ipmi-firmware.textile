@@ -1,0 +1,25 @@
+---
+layout: post
+title: Extracting SuperMicro IPMI Firmware
+---
+
+Progress has been made on understanding how the IPMI firmware is actually laid out.   Through some careful research I actually found some documentation for the bootloader.  It gave me the structure of the footer blocks used to identify a section of a firmware image.  Some quick python code later, and I have <a href="https://github.com/devicenull/ipmi_firmware_tools">a tool</a> to dump some information and extract different parts of the firmware.  
+
+<pre class="highlight">
+Read 16777216 bytes
+Bootloader md5 matches, this parser will probably work!
+
+Image: 2 Name: 1stFS Base: 0x40180000 Length: 0x7be000 (8118272) Load: 0xd00000 Exec: 0xd00000 Image Checksum: 0xaec12c0a Signature: 0xa0ffff9f Type: file (0x8) Footer Checksum: 0x279680c7
+Dumping 0x1572864 to 0x9691136 to 1stFS.bin
+
+Image: 3 Name: kernel Base: 0x40980000 Length: 0x112aa8 (1125032) Load: 0x8000 Exec: 0x8000 Image Checksum: 0x9cccf523 Signature: 0xa0ffff9f Type: active, copy2ram, exec, compressed (0x17) Footer Checksum: 0x13160eaa
+Dumping 0x9961472 to 0x11086504 to kernel.bin
+
+Image: 4 Name: 2ndFS Base: 0x40b80000 Length: 0x1e1000 (1970176) Load: 0xd00000 Exec: 0xd00000 Image Checksum: 0x9a9c1cac Signature: 0xa0ffff9f Type: file (0x8) Footer Checksum: 0x3b896522
+Dumping 0x12058624 to 0x14028800 to 2ndFS.bin
+</pre>
+
+I think this is all correct, but I won't know for sure until I figure out what the checksums actually are.  `file` identifies everything correctly, so I'm hopeful it's all correct.
+
+
+This would normally be a good thing to use binwalk for, but I've been unable to get binwalk to handle things correctly.  More importantly, binwalk can't put the file back together again, so I'd need a different tool anyway.
