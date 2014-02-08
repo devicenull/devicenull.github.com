@@ -15,7 +15,7 @@ There is also a jumper (J29) next to the BIOS flash chip.  I believe this discon
 
 Once everything is connected, it's pretty easy to read the BIOS.  I'm using flashrom, as it appears to be the only real software to do this.
 
-<pre class="highlight">
+{% highlight bash %}
 # time flashrom -p buspirate_spi:dev=/dev/ttyUSB0,spispeed=8M  -r ../bios
 flashrom v0.9.7-r1764 on Linux 3.11.0-15-generic (x86_64)
 flashrom is free software, get the source code at http://www.flashrom.org
@@ -27,7 +27,7 @@ Reading flash... done.
 real    13m42.823s
 user    0m4.811s
 sys     0m27.361s
-</pre>
+{% endhighlight %}
 
 This takes a fairly long time, so I've purchased a Bus Blaster instead in the hopes of speeding it up.  A 15 minute program cycle isn't really going to make development easy.
 
