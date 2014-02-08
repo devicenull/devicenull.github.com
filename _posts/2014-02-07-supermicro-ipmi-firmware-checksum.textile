@@ -7,7 +7,7 @@ In my quest to modify SuperMicro IPMI firmware, I've needed to be able to recomp
 
 The actual checksum algorithm:
 
-<pre class="highlight">
+{% highlight python %}
 def computeChecksum(data):
         cksum = 0xffffffff
 
@@ -23,7 +23,7 @@ def computeChecksum(data):
                         cksum -= 1
 
         return cksum
-</pre>
+{% endhighlight %}
 
 This algorithm is used for both the image and footer checksums.  For the footer checksum, only the 48 bytes of actual footer data are used.  The padding bytes and footer checksum itself are not included.
 

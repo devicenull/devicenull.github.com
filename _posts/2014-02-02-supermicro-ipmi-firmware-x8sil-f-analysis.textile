@@ -63,7 +63,7 @@ They provide a Makefile, which compiles most of whats there.  That's not entirel
 
 images/bootloader_pcb_rev_b.bin this looks suspiciously like the bootloader from our image.  Let's extract it and find out!
 
-<pre class="highlight">
+{% highlight bash %}
 $ dd if=SMT_313.bin of=bootloader bs=1 count=64040
 64040+0 records in
 64040+0 records out
@@ -72,7 +72,7 @@ $ md5sum bootloader
 166162c6c9f21d7a710dfd62a3452684  bootloader
 $ md5sum images/bootloader_pcb_rev_b.bin
 166162c6c9f21d7a710dfd62a3452684  images/bootloader_pcb_rev_b.bin
-</pre>
+{% endhighlight %}
 
 Awesome, this bootloader appears to be some pretty standard software, so we shouldn't have to worry about any customizations that may have been made to it.  A quick look inside the bootloader (with `strings`) shows some interesting things:
 
@@ -121,7 +121,7 @@ Though it doesn't help us, you can also find the default ntp.conf file (NTP/etc/
 
 While it's interesting they've implemented a new bootloader (rather then using something like U-Boot), that's not exactly helpful to us. The bootloader isn't part of any of the bugs that need fixing, so let's move on the root filesystem.  We need to pull it from the image and extract it:
 
-<pre class="highlight">
+{% highlight bash %}
 $ dd if=SMT_313.bin of=cramfs1 skip=1572864 count=$((9961472-1572864)) bs=1
 8388608+0 records in
 8388608+0 records out
@@ -136,7 +136,7 @@ $ sudo mount -o loop ./cramfs1 mount; cd mount
 mount: warning: mount seems to be mounted read-only.
 
 $ sudo tar -cf - . | sudo tar -C ../cramfs1_extract/ -xpf -
-</pre>
+{% endhighlight %}
 
 This copies everything to cramfs1_extract (you could look through everything in mount, but you can't make any changes that way).  Looking around, there are various bits of standard linux software:
 

@@ -9,14 +9,14 @@ Thankfully, qemu can run individual binaries, though this is a little tricky to 
 
 My first shot was just running it:
 
-<pre class="highlight">
+{% highlight bash %}
 $ qemu-arm-static ./bin/busybox
 /lib/ld-linux.so.2: Invalid ELF image for this architecture
-</pre>
+{% endhighlight %}
 
 This error was a little confusing at first.  Doing some research I found <a href="http://w00tsec.blogspot.com/2013/09/analyzing-and-running-binaries-from.html">this post</a> and realize what the error actually means.  What's happening is qemu starts executing the ARM binary, then goes to try and load /lib/ld-linux.so.2 in order to go further.  It finds the host's x86-64 binary, which is not actually compatible.  That same post gives instructions on how to actually run binaries:
 
-<pre class="highlight">
+{% highlight bash %}
 $ sudo cp `whereis qemu-arm-static | cut -d" " -f2`  .
 $ sudo chroot . ./qemu-arm-static ./bin/busybox
 BusyBox v1.12.0 (2014-01-02 18:15:33 PST) multi-call binary
@@ -37,4 +37,4 @@ Currently defined functions:
         iplink, iproute, kill, killall, killall5, linuxrc, ln, login, ls, lsmod, mesg, mkdir, mknod, mktemp, mount, mountpoint, mt, mv, netstat, nice, passwd, ping, ping6, pipe_progress, pivot_root,
         poweroff, ps, pwd, realpath, reboot, reset, rm, rmmod, route, run-parts, rx, script, sed, sendmail, setsid, sh, sleep, start-stop-daemon, tar, telnetd, tftp, top, touch, traceroute, udhcpc, umount,
         uname, unzip, usleep, vconfig, wget, which, zcat
-</pre>
+{% endhighlight %}
