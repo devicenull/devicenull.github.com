@@ -1,0 +1,30 @@
+---
+layout: post
+title: SuperMicro IPMI Firmware Checksum
+---
+
+In my quest to modify SuperMicro IPMI firmware, I've needed to be able to recompute the checksums that are embedded in the image.  Despite being a 32 bit checksum, they seem to have implemented their own checksum algorithm (at least, I can't seem to figure out what else it may be).  I found that one of the older IPMI SDKs included the 'mkimage' tool, which calculates the checksum (in addition to appending the entire footer to an image).  I ran this through a couple decompilers (notably, the <a href="http://decompiler.fit.vutbr.cz/">Retargetable Decompiler</a> produced the best output), but they weren't very helpful.  The actual checksum algorithm is pretty simple, and all the decompilers blew it up into 30+ lines with all sorts of mysterious control flow.
+
+The actual checksum algorithm:
+
+<pre class="highlight">
+def computeChecksum(data):
+        cksum = 0xffffffff
+
+        for i in range(0,len(data)):
+                char = ord(data[i])
+
+                pos = char << ((i%4)*8)
+
+                cksum -= pos
+
+                if cksum < 0:
+                        cksum &= 0xffffffff
+                        cksum -= 1
+
+        return cksum
+</pre>
+
+This algorithm is used for both the image and footer checksums.  For the footer checksum, only the 48 bytes of actual footer data are used.  The padding bytes and footer checksum itself are not included.
+
+This has been integrated into my <a href="https://github.com/devicenull/ipmi_firmware_tools">IPMI firmware tools</a> and they will verify the checksums during extraction.
