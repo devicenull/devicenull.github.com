@@ -1,0 +1,38 @@
+---
+layout: post
+title: SuperMicro IPMI Overall Footer
+---
+
+Next up is the global footer block in the firmware file.  There's one of per file, and it contains the version and overall checksum.  It looks like this (unrelated bytes masked with xx):
+
+<pre class="highlight">
+00d6ffb0  xx xx xx 41 54 45 4e 73  5f 46 57 03 13 71 8c 61  |...ATENs_FW..q.a|
+00d6ffc0  29 9f 17 xx xx xx xx xx  xx xx xx xx xx xx xx xx  |)...............|
+</pre>
+
+The actual layout looks like this:
+
+<pre class="highlight">
+ATENs_FW MAJORVER MINORVER 0x71 TOTALCRC 0x17
+
+ATENs_FW is a constant, seems to be used to find this footer in the file.
+
+MAJORVER is the major version of the firmware (3, in this case)
+
+MINORVER is the minor version of the firmware (19 (0x13), in this case)
+
+0x71 is a constant, also used to identify this footer.
+
+TOTALCRC is the CRC of all the image data in the file.  This is computed via the following:
+
+total = ""
+
+for each image within the file:
+	append crc32(image_data) to total
+
+overall_crc = crc32(total)
+
+0x17 is a constant, also used to identify this footer
+</pre>
+
+Reading and verifying the global footer and checksum has been added to my <a href="https://github.com/devicenull/ipmi_firmware_tools">IPMI firmware tools</a>
