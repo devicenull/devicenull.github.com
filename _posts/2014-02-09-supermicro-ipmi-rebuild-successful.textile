@@ -1,0 +1,78 @@
+---
+layout: post
+title: SuperMicro IPMI Rebuild Successful
+---
+
+I've now hit the point where I can sucessfully extract and rebuild an IPMI firmware image.  I've figured out all the checksum algorithms and have some educated guesses about where things go.  I've been testing by extracting and rebuilding the stock interface, and the rebuilt image matches the original exactly.
+
+At this point I can now begin modifying things within the firmware.
+
+{% highlight bash %}
+$ ./read_header.py --extract SMT_313.bin
+Read 16777216 bytes
+Bootloader md5 matches, this parser will probably work!
+Dumping bootloader to data/bootloader.bin
+
+Firmware image: 2 Name: 1stFS Base: 0x40180000 Length: 0x7be000 (8118272) Load: 0xd00000 Exec: 0xd00000 Image Checksum: 0xaec12c0a Signature: 0xa0ffff9f Type: file (0x8) Footer Checksum: 0x279680c7 * footer checksum matches
+Dumping 0x1572864 to 0x9691136 to data/1stFS.bin
+Image checksum matches
+
+Firmware image: 3 Name: kernel Base: 0x40980000 Length: 0x112aa8 (1125032) Load: 0x8000 Exec: 0x8000 Image Checksum: 0x9cccf523 Signature: 0xa0ffff9f Type: active, copy2ram, exec, compressed (0x17) Footer Checksum: 0x13160eaa * footer checksum matches
+Dumping 0x9961472 to 0x11086504 to data/kernel.bin
+Image checksum matches
+
+Firmware image: 4 Name: 2ndFS Base: 0x40b80000 Length: 0x1e1000 (1970176) Load: 0xd00000 Exec: 0xd00000 Image Checksum: 0x9a9c1cac Signature: 0xa0ffff9f Type: file (0x8) Footer Checksum: 0x3b896522 * footer checksum matches
+Dumping 0x12058624 to 0x14028800 to data/2ndFS.bin
+Image checksum matches
+
+Firmware footer version 3.19 checksum: 0x9f29618c tag: 0x7117
+Firmware checksum matches
+
+$ cat data/image.ini
+[flash]
+total_size = 16777216
+
+[global]
+major_version = 3
+minor_version = 19
+
+[images]
+2 = present
+3 = present
+4 = present
+
+[image_2]
+length = 0x7be000
+base_addr = 0x40180000
+load_addr = 0xd00000
+exec_addr = 0xd00000
+name = 1stFS
+type = 0x8
+
+[image_3]
+length = 0x112aa8
+base_addr = 0x40980000
+load_addr = 0x8000
+exec_addr = 0x8000
+name = kernel
+type = 0x17
+
+[image_4]
+length = 0x1e1000
+base_addr = 0x40b80000
+load_addr = 0xd00000
+exec_addr = 0xd00000
+name = 2ndFS
+type = 0x8
+
+$ ./rebuild_image.py
+Writing bootloader...
+Processing image 2
+Processing image 3
+Processing image 4
+Done!
+
+$ md5sum SMT_313.bin ./data/rebuilt_image.bin
+3d0df15822decbf5c1322443b6812bfc  SMT_313.bin
+3d0df15822decbf5c1322443b6812bfc  ./data/rebuilt_image.bin
+{% endhighlight %}
