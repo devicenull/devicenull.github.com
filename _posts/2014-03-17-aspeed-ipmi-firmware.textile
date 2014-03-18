@@ -1,0 +1,42 @@
+---
+layout: post
+title: ASpeed IPMI Firmware
+---
+
+I've started looking into adding ASpeed support to my <a href="https://github.com/devicenull/ipmi_firmware_tools">IPMI Firmware Tools</a>.  Initially, this was pretty straightfoward.  There's a nice block at the end of the file that describes all the images present as well as their offsets.  It looks like this:
+
+<pre class="highlight">
+01fc0000  5b 69 6d 67 5d 3a 20 30  20 32 30 66 31 38 20 39  |[img]: 0 20f18 9|
+01fc0010  37 34 65 64 62 33 66 20  75 2d 62 6f 6f 74 2e 62  |74edb3f u-boot.b|
+01fc0020  69 6e 5b 69 6d 67 5d 3a  20 34 30 30 30 30 30 20  |in[img]: 400000 |
+01fc0030  39 34 33 30 30 30 20 39  32 66 38 61 61 30 36 20  |943000 92f8aa06 |
+01fc0040  6f 75 74 5f 72 6f 6f 74  66 73 5f 69 6d 67 2e 62  |out_rootfs_img.b|
+01fc0050  69 6e 5b 69 6d 67 5d 3a  20 31 34 30 30 30 30 30  |in[img]: 1400000|
+01fc0060  20 31 35 39 31 34 31 20  38 36 38 38 65 62 65 32  | 159141 8688ebe2|
+01fc0070  20 6f 75 74 5f 6b 65 72  6e 65 6c 2e 62 69 6e 5b  | out_kernel.bin[|
+01fc0080  69 6d 67 5d 3a 20 31 37  30 30 30 30 30 20 31 64  |img]: 1700000 1d|
+01fc0090  34 30 30 61 20 64 65 36  30 36 66 33 33 20 6f 75  |400a de606f33 ou|
+01fc00a0  74 5f 77 65 62 66 73 5f  69 6d 67 2e 62 69 6e 5b  |t_webfs_img.bin[|
+01fc00b0  65 6e 64 5d 00 00 00 00  00 00 00 00 00 00 00 00  |end]............|
+01fc00c0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+</pre>
+
+which parses out to this (note the image number is not part of the block):
+<pre class="highlight">
+Firmware image: 1 Name: u-boot.bin Base: 0x0 Length: 0x20f18 CRC32: 0x974edb3f
+Firmware image: 2 Name: out_rootfs_img.bin Base: 0x400000 Length: 0x943000 CRC32: 0x92f8aa06
+Firmware image: 3 Name: out_kernel.bin Base: 0x1400000 Length: 0x159141 CRC32: 0x8688ebe2
+Firmware image: 4 Name: out_webfs_img.bin Base: 0x1700000 Length: 0x1d400a CRC32: 0xde606f33
+</pre>
+
+However, there's another footer in the file, and I don't quite understand this one yet:
+
+<pre class="highlight">
+018d4000  41 54 45 4e 73 5f 46 57  01 23 39 32 66 38 39 34  |ATENs_FW.#92f894|
+018d4010  33 30 71 64 65 36 30 31  64 34 30 17 ff ff ff ff  |30qde601d40.....|
+018d4020  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
+</pre>
+
+It starts off pretty standard (ATENs_FW MAJORVER MINORVER), but from there it's currently a mystery.  The remaining content is too big to be a CRC32 or the other weird checksum algorithm that I've seen them use before.  It's too small to be something like a MD5, and even odder it's not a power of two bits (it's 68 bits).  I'm suspecting that this is at least two seperate fields, but I'm not sure.
+
+I've added basic support at the moment.  I can extract the firmware, and verify the known checksums.  There isn't any sort of support for regenerating an image though.
