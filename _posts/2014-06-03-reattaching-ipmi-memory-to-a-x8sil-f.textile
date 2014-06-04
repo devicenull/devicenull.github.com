@@ -6,14 +6,14 @@ title: Reattaching IPMI Memory to a X8SIL-F
 So, in my last post I had sucessfully removed a flash memory chip from my X8SIL-F.  The next step was to attach the 'emulator' to the motherboard, and attach the connector to another flash chip.  This requires lots of t
 iny little soldering, which is quite annoying to do.  I was ultimately successful, though it took a good 6 hours to accomplish.
 
-**Step 1:** Attach some small wires to the socket.  These will eventually be connected to the flash chip.  I used bits of the conductor from some stranded speaker wire I had.  Lacking any sort of third hard, I just hot glue
+*  Attach some small wires to the socket.  These will eventually be connected to the flash chip.  I used bits of the conductor from some stranded speaker wire I had.  Lacking any sort of third hard, I just hot glue
 d the wires and the socket to my desk.  You don't actually need to connect all the pins, it's safe to just connect the outer three on each side. (Look at the <a href="http://datasheet.octopart.com/MX25L12845EMI-10G-Macronix-datasheet-12526005.pdf">datasheet</a> for the pinout).
 
 <img src="/files/ipmi_socket.jpg" title="Half soldered IPMI socket">
 
-**Step 2:** Bend the legs up, reinforce them with hot glue.
+* Bend the legs up, reinforce them with hot glue.
 
-**Step 3:** Solder the flash chip on
+* Solder the flash chip on
 
 You'll end up with something that looks like this
 
@@ -21,15 +21,15 @@ You'll end up with something that looks like this
 
 If you solder somewhat carefully and don't cover up the pins on the top you can still fit a Pomona clip on top.  This makes it easy to program.
 
-** Step 4:** Solder the 'emulator' onto the motherboard.  This looks terrible, but works.  I needed magnification to find all the tiny solder bridges I created.
+* Solder the 'emulator' onto the motherboard.  This looks terrible, but works.  I needed magnification to find all the tiny solder bridges I created.
 
 <img src="/files/motherboard_header.jpg" title="X8SIL Motherboard Header">
 
-** Step 5:** Program the new memory chip with the standard firmware, attach to header.
+* Program the new memory chip with the standard firmware, attach to header.
 
 <img src="/files/flash_attached.jpg" title="Flash memory attached">
 
-** Step 6:** Moment of truth! Power on the board.  If you've done everything correctly, the IPMI controler should boot up.  The 'IPMI Health Indicator' (that green circle in the previous image) should start flashing, and the controller should pull a DHCP leasse.
+* Moment of truth! Power on the board.  If you've done everything correctly, the IPMI controler should boot up.  The 'IPMI Health Indicator' (that green circle in the previous image) should start flashing, and the controller should pull a DHCP leasse.
 
 If your controller doesn't work, make sure you haven't created any solder bridges.  Also make sure that everything is properly attached.
 
