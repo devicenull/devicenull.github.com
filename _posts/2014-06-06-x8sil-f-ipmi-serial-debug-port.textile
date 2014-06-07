@@ -5,6 +5,10 @@ title: X8SIL-F IPMI Serial (debug) port
 
 After reading a <a href="http://www.devttys0.com/2012/11/reverse-engineering-serial-ports">blog post</a> on it, I went probing around my X8SIL-F board looking for a hidden serial port.  After entirely too long, I discovered it's right near the IPMI controller, and is labeled J25 (TX) and J26 (RX).  You'll need an adapter though, this is a 3.3v serial port.  I (badly) soldered some headers on, and am now able to interact with the IPMI controller.
 
+It looks like this:
+
+<img src="/files/ipmi_serial.jpg" title="IPMI Serial Port">
+
 Watching it boot up is pretty interesting:
 
 <pre class="highlight">
