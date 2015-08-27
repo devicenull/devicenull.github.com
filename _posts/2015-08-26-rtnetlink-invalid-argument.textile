@@ -1,0 +1,12 @@
+---
+layout: post
+title: RTNETLINK Invalid argument
+---
+
+I was trying to add some static routes to a Linux machine using 'ip route add'.  I was getting the very cryptic error:
+
+<pre class="highlight">
+RTNETLINK answers: Invalid argument
+</pre>
+
+The issue in my particular case was that I was trying to add a route using the gateway address of a subnet.  `ip route` seems to validate that the route you're adding is the network IP address.  You can't have any of the host IP bits set when you do this.
