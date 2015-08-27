@@ -44,7 +44,7 @@ label diskless
 
 </pre>
 
-If you are using SysLinux >= 4.10, you can make this process faster by grabbing the files via HTTP instead.
+If you are using SysLinux >= 5.10, you can make this process faster by grabbing the files via HTTP instead.
 
 <pre class="highlight">
 
