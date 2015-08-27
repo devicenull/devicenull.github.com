@@ -1,0 +1,19 @@
+---
+layout: post
+title: BIRD and TCP_MD5SIG Cannot allocate memory
+---
+
+Recently, I've been working on a project that uses a large number of MD5-authenticated BGP sessions with BIRD.  BIRD uses the support built into the Linux kernel (which, was a surprise to me that even existed!).  After around 150 concurrent BGP sessions, I started getting weird errors from BIRD:
+
+<pre class="highlight">
+2015-08-25 16:58:09 <ERR> session1: Socket error: TCP_MD5SIG: Cannot allocate memory
+2015-08-25 16:58:09 <ERR> session2: Socket error: TCP_MD5SIG: Cannot allocate memory
+2015-08-25 16:58:09 <ERR> session3: Socket error: TCP_MD5SIG: Cannot allocate memory
+2015-08-25 16:58:09 <ERR> session4: Socket error: TCP_MD5SIG: Cannot allocate memory
+</pre>
+
+This largely didn't seem to make any sense.  The machine had plenty of free memory, and I didn't seem to be hitting any ulimit limits.  BIRD's status display was showing 'Error: Kernel MD5 auth failed' for all the failing sessions, which wasn't very helpful.
+
+I couldn't really find any information on this, so I asked on the BIRD users mailing list.  I was pointed to https://patchwork.ozlabs.org/patch/138861/ (Linux kernel commit by Eric Dumazet, Jan. 31, 2012, 8:56 p.m., commit hash da5d322), which adds a sysctl setting that restricts the amount of memory available for authenticated TCP sockets.
+
+In the end, the fix was just a matter of increasing the net.core.optmem_max sysctl setting.  Once I did this, and restarted BIRD, all the sessions came up just fine.
